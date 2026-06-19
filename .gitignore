@@ -3,10 +3,3 @@
 node_modules/
 .next/
 IDEA.MD
-jsconfig.json
-next.config.js
-package-lock.json
-package.json
-postcss.config.js
-tailwind.config.js
-README.md
