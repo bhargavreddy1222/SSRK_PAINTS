@@ -43,16 +43,22 @@ export default function OrderPage() {
     }
 
     try {
-      // TODO: wire up your API
-      // const res = await fetch('/api/orders', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) })
-      // if (!res.ok) throw new Error()
-      console.log('Order payload:', payload)
-      await new Promise(r => setTimeout(r, 1200))
-      setStatus('success')
-      clearCart()
-    } catch {
-      setStatus('error')
-    }
+  const res = await fetch('/api/orders', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+
+  if (!res.ok) {
+    const data = await res.json()
+    throw new Error(data.error)
+  }
+
+  setStatus('success')
+  clearCart()
+} catch {
+  setStatus('error')
+}
   }
 
   if (status === 'success') {
