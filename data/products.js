@@ -105,32 +105,15 @@ export const products = [
     description: 'Premium smooth-finish interior emulsion with washability and rich colour depth.',
     bases: [
       {
-        id: 'wb', name: 'White Base', desc: 'For white and light pastel shades',
+        id: 'wb', name: 'RB2', desc: 'For white and light pastel shades',
         packs: [
-          { size: '1L', mrp: 1000, price: 850   },
-          { size: '4L', mrp: 3800, price: 3200  },
-          { size: '10L', mrp: 9000, price: 7800  },
-          { size: '20L', mrp: 18000, price: 15000 },
+          { size: '1L', mrp: 809, price: 620   },
+          { size: '4L', mrp: 3800, price: 2480  },
+          { size: '10L', mrp: 9000, price: 6000  },
+          { size: '20L', mrp: 18000, price: 11800 },
         ],
       },
-      {
-        id: 'mb', name: 'Medium Base', desc: 'For medium and mid-tone shades',
-        packs: [
-          { size: '1L', mrp: 1000, price: 875   },
-          { size: '4L', mrp: 3800, price: 3300  },
-          { size: '10L', mrp: 9000, price: 8050  },
-          { size: '20L', mrp: 18000, price: 15500 },
-        ],
-      },
-      {
-        id: 'db', name: 'Deep Base', desc: 'For dark and deep shades',
-        packs: [
-          { size: '1L', mrp: 1000, price: 900   },
-          { size: '4L', mrp: 3800, price: 3400  },
-          { size: '10L', mrp: 9000, price: 8300  },
-          { size: '20L', mrp: 18000, price: 16000 },
-        ],
-      },
+    
     ],
   },
 
@@ -143,30 +126,30 @@ export const products = [
     description: 'Weatherproof exterior emulsion, UV and rain resistant with long-lasting colour.',
     bases: [
       {
-        id: 'wb', name: 'White Base', desc: 'For white and light pastel shades',
+        id: 'wb', name: 'AB2', desc: 'For white and light pastel shades',
         packs: [
-          { size: '1L', mrp: 800, price: 620   },
-          { size: '4L', mrp: 3000, price: 2350  },
-          { size: '10L', mrp: 7000, price: 5600  },
-          { size: '20L', mrp: 14000, price: 10800 },
+          { size: '1L', mrp: 800, price: 380   },
+          { size: '4L', mrp: 3000, price: 1500  },
+          { size: '10L', mrp: 7000, price: 3400  },
+          { size: '20L', mrp: 14000, price: 6500 },
         ],
       },
       {
-        id: 'mb', name: 'Medium Base', desc: 'For medium and mid-tone shades',
+        id: 'mb', name: 'AB11', desc: 'For medium and mid-tone shades',
         packs: [
-          { size: '1L', mrp: 800, price: 640   },
-          { size: '4L', mrp: 3000, price: 2430  },
-          { size: '10L', mrp: 7000, price: 5800  },
-          { size: '20L', mrp: 14000, price: 11200 },
+          { size: '1L', mrp: 800, price: 380   },
+          { size: '4L', mrp: 3000, price: 1500  },
+          { size: '10L', mrp: 7000, price: 3400  },
+          { size: '20L', mrp: 14000, price: 6500 },
         ],
       },
       {
-        id: 'db', name: 'Deep Base', desc: 'For dark and deep shades',
+        id: 'db', name: 'AB21G', desc: 'For dark and deep shades',
         packs: [
-          { size: '1L', mrp: 800, price: 660   },
-          { size: '4L', mrp: 3000, price: 2500  },
-          { size: '10L', mrp: 7000, price: 6000  },
-          { size: '20L', mrp: 14000, price: 11600 },
+          { size: '1L', mrp: 800, price: 380   },
+          { size: '4L', mrp: 3000, price: 1500  },
+          { size: '10L', mrp: 7000, price: 3400  },
+          { size: '20L', mrp: 14000, price: 6500 },
         ],
       },
     ],
@@ -181,27 +164,12 @@ export const products = [
     description: 'Economy interior emulsion with good coverage and clean, smooth finish.',
     bases: [
       {
-        id: 'wb', name: 'White Base', desc: 'For white and light pastel shades',
+        id: 'wb', name: 'TE3', desc: 'For white and light pastel shades',
         packs: [
-          { size: '4L', mrp: 1000, price: 1050 },
-          { size: '10L', mrp: 2500, price: 2500 },
-          { size: '20L', mrp: 4800, price: 4800 },
-        ],
-      },
-      {
-        id: 'mb', name: 'Medium Base', desc: 'For medium and mid-tone shades',
-        packs: [
-          { size: '4L', mrp: 1100, price: 1100 },
-          { size: '10L', mrp: 2620, price: 2620 },
-          { size: '20L', mrp: 5000, price: 5000 },
-        ],
-      },
-      {
-        id: 'db', name: 'Deep Base', desc: 'For dark and deep shades',
-        packs: [
-          { size: '4L', mrp: 1150, price: 1150 },
-          { size: '10L', mrp: 2750, price: 2750 },
-          { size: '20L', mrp: 5250, price: 5250 },
+          {size: '1L', mrp: 800 , price: 200   },
+          { size: '4L', mrp: 1000, price: 750 },
+          { size: '10L', mrp: 2500, price: 1780 },
+          { size: '20L', mrp: 4800, price: 3450 },
         ],
       },
     ],
@@ -210,24 +178,218 @@ export const products = [
   {
     id: 4,
     brand:    'Asian Paints',
-    name:     'Wall Primer',
+    name:     'sparc interior Wall Primer',
     category: 'Primer',
     type:     PRODUCT_TYPE.CLEAR,
     description: 'Interior wall primer for better adhesion and uniform paint coverage.',
     packs: [
-      { size: '4L', mrp: 1000, price: 880  },
-      { size: '10L', mrp: 2500, price: 2100 },
-      { size: '20L', mrp: 4800, price: 4000 },
+      {size: '1L', mrp: 250, price: 150  },
+      { size: '4L', mrp: 1000, price: 550  },
+      { size: '10L', mrp: 2500, price: 1050 },
+      { size: '20L', mrp: 4800, price: 1900 },
+    ],
+  },
+  {
+    id:5,
+    brand:    'Asian Paints',
+    name:     'sparc Exterior Wall Primer',
+    category: 'Primer',
+    type:     PRODUCT_TYPE.CLEAR,
+    description: 'Exterior wall primer for better adhesion and uniform paint coverage.',
+    packs: [
+      {size: '1L', mrp: 250, price: 180  },
+      { size: '4L', mrp: 1000, price: 650  },
+      { size: '10L', mrp: 2500, price: 1350 },
+      { size: '20L', mrp: 4800, price: 2500 },
+    ],
+  },
+  {
+    id:6,
+    brand:    'Asian Paints',
+    name:     'Exterior Wall Primer',
+    category: 'Primer',
+    type:     PRODUCT_TYPE.CLEAR,
+    description: 'Exterior wall primer for better adhesion and uniform paint coverage.',
+    packs: [
+      {size: '1L', mrp: 250, price: 220  },
+      { size: '4L', mrp: 1000, price:  850 },
+      { size: '10L', mrp: 2500, price: 1650 },
+      { size: '20L', mrp: 4800, price: 3100 },
+    ],
+  },
+  {
+    id:7,
+    brand:    'Asian Paints',
+    name:     'Ace Exterior emulsion',
+    category: 'Exterior',
+    type:     PRODUCT_TYPE.TINTABLE,
+    description: 'Exterior emulsion with good coverage and weather resistance.',
+    bases: [
+      {
+        id: 'wb', name: 'AC2G', desc: 'For white and light pastel shades',
+        packs: [
+          { size: '1L', mrp: 800, price: 230   },
+          { size: '4L', mrp: 3000, price: 900  },
+          { size: '10L', mrp: 7000, price: 2000  },
+          { size: '20L', mrp: 14000, price: 3900 },
+        ],
+  },
+  {
+    id :'mb', name: 'AC9G', desc: 'For medium and mid-tone shades',
+    packs: [
+      { size: '1L', mrp: 800, price: 250   },
+      { size: '4L', mrp: 3000, price: 950  },
+      { size: '10L', mrp: 7000, price: 2100  },
+      { size: '20L', mrp: 14000, price: 4000 },
+    ],
+  },
+  {
+    id :'db', name: 'AC21G', desc: 'For dark and deep shades',
+    packs: [
+      { size: '1L', mrp: 800, price: 270   },
+      { size: '4L', mrp: 3000, price: 1000  },
+      { size: '10L', mrp: 7000, price: 2200  },
+      { size: '20L', mrp: 14000, price: 4200 },
     ],
   },
 
-
+ ],
+},
+{
+  id:8,
+  brand:    'Asian Paints',
+  name:     'Tractor shyne interior emulsion',
+  category: 'Interior',
+  type:     PRODUCT_TYPE.TINTABLE,
+  description: 'Economy interior emulsion with good coverage and clean, smooth finish.',
+  bases: [
+    {
+     
+        id: 'wb', name: 'SH1', desc: 'For white and light pastel shades',
+      packs: [
+        {size: '1L', mrp: 800 , price: 240   },
+        { size: '4L', mrp: 1000, price: 900 },
+        { size: '10L', mrp: 2500, price: 2200 },
+        { size: '20L', mrp: 4800, price: 4200 },
+      ],
+    },
+      
+  ]
+},
+{
+  id:9,
+  brand:    'Asian Paints',
+  name:     'Premium interior emulsion',
+  category: 'Interior',
+  type:     PRODUCT_TYPE.TINTABLE,
+  description: 'Economy interior emulsion with good coverage and clean, smooth finish.',
+  bases: [
+    {
+     
+        id: 'wb', name: 'BW1', desc: 'For white and light pastel shades',
+      packs: [
+        {size: '1L', mrp: 800 , price: 380  },
+        {size: '4L', mrp: 1600, price: 1450 },
+        {size: '10L', mrp: 4500, price: 3500 },
+        {size: '20L', mrp: 8000, price: 6750 },
+      ],
+    },
+    {
+      id: 'mb', name: 'BW11', desc: 'For medium and mid-tone shades',
+      packs: [
+        { size: '1L', mrp: 800, price: 370  },
+       
+      ],
+    },
+    {
+      id: 'yw', name: 'BW12', desc: 'For yellow and warm shades',
+      packs: [
+        { size: '1L', mrp: 800, price: 380   },
+       
+      ],
+    },
+    {
+      id: 'pb', name: 'BW16', desc: 'For red and blush shades',
+      packs: [
+        { size: '1L', mrp: 800, price: 380   },
+       
+      ],
+    },
+    {
+      id: 'db', name: 'BW22', desc: 'For dark and deep shades',
+      packs: [
+        { size: '1L', mrp: 800, price: 370  },
+       
+      ],
+    }
+      
+  ]
+},
+{
+  id:10,
+  brand:    'Asian Paints',
+  name:     'Premium shyne interior emulsion',
+  category: 'Interior',
+  type:     PRODUCT_TYPE.TINTABLE,
+  description: 'Economy interior emulsion with good coverage and clean, smooth finish.',
+  bases: [
+    {
+     
+        id: 'wb', name: 'Purewhite', desc: 'For white and light pastel shades',
+      packs: [ 
+        {size: '1L', mrp: 800 , price: 420  },
+        { size: '4L', mrp: 1800, price: 1600 },
+        { size: '10L', mrp: 4500, price: 3850 },
+        { size: '20L', mrp: 8000, price: 7350 },
+      ],
+    },
+      
+  ]
+},
+{
+  id:11,
+  brand:    'Asian Paints',
+  name:     'Royale shyne interior emulsion',
+  category: 'Interior',
+  type:     PRODUCT_TYPE.TINTABLE,
+  description: 'Economy interior emulsion with good coverage and clean, smooth finish.',
+  bases: [
+    {
+     
+        id: 'wb', name: 'Sn3', desc: 'For white and light pastel shades',
+      packs: [
+        {size: '1L', mrp: 800 , price: 680  },
+        { size: '4L', mrp: 2000, price: 2680 },
+        { size: '10L', mrp: 5000, price: 6600 },
+        { size: '20L', mrp: 9000, price: 13000 },
+      ],
+    },
+      
+  ]
+},
+{
+  id:12,
+  brand:    'Asian Paints',
+  name:     'Royale glitz interior emulsion',
+  category: 'Interior',
+  type:     PRODUCT_TYPE.TINTABLE,
+  description: 'Economy interior emulsion with good coverage and clean, smooth finish.',
+  bases: [
+    {id : 'wb', name: 'GL3', desc: 'For white and light pastel shades',
+      packs: [
+        {size: '1L', mrp: 800 , price: 680  },
+        { size: '4L', mrp: 2000, price: 2680 },
+        { size: '10L', mrp: 5000, price: 6600 },
+        { size: '20L', mrp: 15000, price: 13050 },
+      ],
+    },
+],
   // ╔══════════════════════════════════════════════════════╗
   // ║  BERGER PAINTS                                       ║
   // ╚══════════════════════════════════════════════════════╝
-
+},
   {
-    id: 5,
+    id: 13,
     brand:    'Berger Paints',
     name:     'Silk Luxury Emulsion',
     category: 'Interior',
@@ -265,7 +427,7 @@ export const products = [
   },
 
   {
-    id: 6,
+    id: 14,
     brand:    'Berger Paints',
     name:     'Weathercoat',
     category: 'Exterior',
@@ -308,7 +470,7 @@ export const products = [
   // ╚══════════════════════════════════════════════════════╝
 
   {
-    id: 7,
+    id: 15,
     brand:    'Sheenlac',
     name:     'Synthetic Enamel',
     category: 'Enamel',
@@ -323,7 +485,7 @@ export const products = [
   },
 
   {
-    id: 8,
+    id: 16,
     brand:    'Sheenlac',
     name:     'NC Lacquer',
     category: 'Wood Finish',
@@ -338,7 +500,7 @@ export const products = [
   },
 
   {
-    id: 9,
+    id: 17,
     brand:    'Sheenlac',
     name:     'PU Wood Finish',
     category: 'Wood Finish',
@@ -358,7 +520,7 @@ export const products = [
   // ╚══════════════════════════════════════════════════════╝
 
   {
-    id: 10,
+    id: 18,
     brand:    'Saincoat',
     name:     'Interior Emulsion',
     category: 'Interior',
@@ -393,7 +555,7 @@ export const products = [
   },
 
   {
-    id: 11,
+    id: 19,
     brand:    'Saincoat',
     name:     'Exterior Emulsion',
     category: 'Exterior',
@@ -428,7 +590,7 @@ export const products = [
   },
 
   {
-    id: 14,
+    id: 20,
     brand:    'Saincoat',
     name:     'Distemper',
     category: 'Interior',
@@ -448,7 +610,7 @@ export const products = [
   // ╚══════════════════════════════════════════════════════╝
 
   {
-    id: 12,
+    id: 21,
     brand:    'JK Wall Care',
     name:     'White Cement Putty',
     category: 'Wall Putty',
@@ -468,7 +630,7 @@ export const products = [
   // ╚══════════════════════════════════════════════════════╝
 
   {
-    id: 13,
+    id: 22,
     brand:    'Birla Wall Care',
     name:     'White Putty',
     category: 'Wall Putty',
