@@ -111,19 +111,19 @@ export default function OrderPage() {
             </p>
 
             <Field label="Full Name" error={errors.name}>
-              <input type="text" placeholder="Ravi Kumar" value={form.name}
+              <input type="text" placeholder="name" value={form.name}
                 onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
                 className={inputCls(errors.name)} />
             </Field>
 
             <Field label="Phone Number" error={errors.phone}>
-              <input type="tel" placeholder="98765 43210" value={form.phone}
+              <input type="tel" placeholder="phone number" value={form.phone}
                 onChange={e => setForm(p => ({ ...p, phone: e.target.value }))}
                 className={inputCls(errors.phone)} />
             </Field>
 
             <Field label="Email Address" error={errors.email}>
-              <input type="email" placeholder="ravi@gmail.com" value={form.email}
+              <input type="email" placeholder="email address" value={form.email}
                 onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
                 className={inputCls(errors.email)} />
             </Field>

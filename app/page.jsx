@@ -31,7 +31,7 @@ export default function HomePage() {
 
         <div className="max-w-xl relative z-10">
           <span className="inline-block bg-orange-50 text-orange-700 border border-orange-200 px-3 py-1 rounded text-[0.7rem] font-bold tracking-wide uppercase mb-5">
-            Paints &amp; Hardware · Guntur, AP
+            Paints &amp; Hardware  Guntur, AP
           </span>
 
           <h1 className="text-4xl md:text-5xl font-extrabold leading-[1.12] tracking-tight mb-2">
@@ -65,7 +65,7 @@ export default function HomePage() {
 
           <div className="flex items-start gap-2 mt-8 text-sm text-stone-400">
             <span className="mt-0.5 flex-shrink-0">📍</span>
-            <span>Your Address, Landmark, Guntur, Andhra Pradesh — PIN XXXXXX</span>
+            <span>1st Line,Buchaiah Thota, Landmark, Guntur, Andhra Pradesh — PIN 522001</span>
           </div>
         </div>
       </section>
@@ -137,8 +137,8 @@ export default function HomePage() {
             </p>
             <div className="flex flex-col gap-4 mb-6">
               {[
-                { icon: '📍', label: 'Address',    val: 'Your Address, Landmark,\nGuntur, Andhra Pradesh — PIN XXXXXX' },
-                { icon: '📞', label: 'Phone',      val: '+91 XXXXX XXXXX' },
+                { icon: '📍', label: 'Address',    val: '1st Line,Buchaiah Thota, Landmark, Guntur, Andhra Pradesh — PIN 522001' },
+                { icon: '📞', label: 'Phone',      val: '+91 9949417980' },
                 { icon: '🕐', label: 'Shop Hours', val: 'Mon–Sat: 9am–8pm  ·  Sun: 10am–5pm' },
               ].map(item => (
                 <div key={item.label} className="flex items-start gap-3 text-sm">

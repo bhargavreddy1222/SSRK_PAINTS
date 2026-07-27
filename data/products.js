@@ -102,6 +102,8 @@ export const products = [
     name:     'Royale Luxury Emulsion',
     category: 'Interior',
     type:     PRODUCT_TYPE.TINTABLE,
+    // Product 1 — Royale Luxury Emulsion
+    image: '/image/asian/royale-luxury.jpg',
     description: 'Premium smooth-finish interior emulsion with washability and rich colour depth.',
     bases: [
       {
@@ -123,6 +125,7 @@ export const products = [
     name:     'Apex Exterior Emulsion',
     category: 'Exterior',
     type:     PRODUCT_TYPE.TINTABLE,
+    image: '/image/asian/apex-exterior.jpg',
     description: 'Weatherproof exterior emulsion, UV and rain resistant with long-lasting colour.',
     bases: [
       {
@@ -161,6 +164,7 @@ export const products = [
     name:     'Tractor Emulsion',
     category: 'Interior',
     type:     PRODUCT_TYPE.TINTABLE,
+    image: '/image/asian/tractor-emulsion.jpg',
     description: 'Economy interior emulsion with good coverage and clean, smooth finish.',
     bases: [
       {
@@ -181,6 +185,7 @@ export const products = [
     name:     'sparc interior Wall Primer',
     category: 'Primer',
     type:     PRODUCT_TYPE.CLEAR,
+    image: '/image/asian/sparc-interior.jpg',
     description: 'Interior wall primer for better adhesion and uniform paint coverage.',
     packs: [
       {size: '1L', mrp: 250, price: 150  },
@@ -195,6 +200,7 @@ export const products = [
     name:     'sparc Exterior Wall Primer',
     category: 'Primer',
     type:     PRODUCT_TYPE.CLEAR,
+    image: '/image/asian/sparc-exterior.jpg',
     description: 'Exterior wall primer for better adhesion and uniform paint coverage.',
     packs: [
       {size: '1L', mrp: 250, price: 180  },
@@ -209,6 +215,7 @@ export const products = [
     name:     'Exterior Wall Primer',
     category: 'Primer',
     type:     PRODUCT_TYPE.CLEAR,
+    image: '/image/asian/exterior-wall-primer.jpg',
     description: 'Exterior wall primer for better adhesion and uniform paint coverage.',
     packs: [
       {size: '1L', mrp: 250, price: 220  },
@@ -223,6 +230,7 @@ export const products = [
     name:     'Ace Exterior emulsion',
     category: 'Exterior',
     type:     PRODUCT_TYPE.TINTABLE,
+    image: '/image/asian/ace-exterior.jpg',
     description: 'Exterior emulsion with good coverage and weather resistance.',
     bases: [
       {
@@ -261,6 +269,7 @@ export const products = [
   name:     'Tractor shyne interior emulsion',
   category: 'Interior',
   type:     PRODUCT_TYPE.TINTABLE,
+  image: '/image/asian/tractor-emulsion-shyne.jpg',
   description: 'Economy interior emulsion with good coverage and clean, smooth finish.',
   bases: [
     {
@@ -282,6 +291,7 @@ export const products = [
   name:     'Premium interior emulsion',
   category: 'Interior',
   type:     PRODUCT_TYPE.TINTABLE,
+  image: '/image/asian/premium-interior.jpg',
   description: 'Economy interior emulsion with good coverage and clean, smooth finish.',
   bases: [
     {
@@ -328,9 +338,10 @@ export const products = [
 {
   id:10,
   brand:    'Asian Paints',
-  name:     'Premium shyne interior emulsion',
+  name:     'Royale shyne interior emulsion',
   category: 'Interior',
   type:     PRODUCT_TYPE.TINTABLE,
+  image: '/image/asian/interior-walls-royale-shyne.jpg',
   description: 'Economy interior emulsion with good coverage and clean, smooth finish.',
   bases: [
     {
@@ -352,6 +363,7 @@ export const products = [
   name:     'Royale shyne interior emulsion',
   category: 'Interior',
   type:     PRODUCT_TYPE.TINTABLE,
+  image: '/image/asian/interior-walls-royale-shyne.jpg',
   description: 'Economy interior emulsion with good coverage and clean, smooth finish.',
   bases: [
     {
@@ -373,6 +385,7 @@ export const products = [
   name:     'Royale glitz interior emulsion',
   category: 'Interior',
   type:     PRODUCT_TYPE.TINTABLE,
+  image: '/image/asian/royale-glitz.jpg',
   description: 'Economy interior emulsion with good coverage and clean, smooth finish.',
   bases: [
     {id : 'wb', name: 'GL3', desc: 'For white and light pastel shades',
@@ -384,10 +397,30 @@ export const products = [
       ],
     },
 ],
+},
+{
+  id: 13,
+  brand:    'Asian Paints',
+  name:     'Neo bharath',
+  category: 'Interior',
+  type:     PRODUCT_TYPE.TINTABLE,
+  image: '/image/asian/neo-bharath.jpg',
+  description: 'Economy interior emulsion with good coverage and clean, smooth finish.',
+  bases: [
+    {id : 'wb', name: 'NB3', desc: 'For white and light pastel shades',
+      packs: [
+        {size: '1L', mrp: 800 , price: 680  },
+        { size: '4L', mrp: 2000, price: 2680 },
+        { size: '10L', mrp: 5000, price: 6600 },
+        { size: '20L', mrp: 15000, price: 13050 },
+      ],
+    },  
+  ],
+},
   // ╔══════════════════════════════════════════════════════╗
   // ║  BERGER PAINTS                                       ║
   // ╚══════════════════════════════════════════════════════╝
-},
+
   {
     id: 13,
     brand:    'Berger Paints',

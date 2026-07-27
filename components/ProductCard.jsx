@@ -3,6 +3,9 @@
 import { useState } from 'react'
 import { useCart } from '@/context/CartContext'
 import { PRODUCT_TYPE } from '@/data/products'
+import Image from 'next/image';
+ 
+'@/app/image'
 
 const BRAND_STYLE = {
   'Asian Paints':    { bg: 'bg-orange-50',  text: 'text-orange-600', activeBorder: 'border-orange-400' },
@@ -67,6 +70,15 @@ export default function ProductCard({ product }) {
       <div>
         <h3 className="font-bold text-base leading-snug mb-0.5">{product.name}</h3>
         <span className="text-[0.72rem] text-stone-400 font-medium">{product.category}</span>
+      </div>
+      {/* Product image */}
+      <div className="w-full h-40 relative">
+        <Image
+          src={product.image}
+          alt={product.name}
+          fill
+          className="object-contain"
+        />
       </div>
 
       {/* Description */}
