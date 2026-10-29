@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  allowedDevOrigins: ['http://localhost:3000', 'https://shop-web-phi.vercel.app','192.168.0.5'],
+  // Hostnames (not URLs) allowed to load the dev server, e.g. a phone on the LAN
+  allowedDevOrigins: ['192.168.0.5'],
 }
 
 module.exports = nextConfig

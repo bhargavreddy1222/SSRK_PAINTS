@@ -1,11 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { useCart } from '@/context/CartContext'
 import { PRODUCT_TYPE } from '@/data/products'
-import Image from 'next/image';
- 
-'@/app/image'
 
 const BRAND_STYLE = {
   'Asian Paints':    { bg: 'bg-orange-50',  text: 'text-orange-600', activeBorder: 'border-orange-400' },
@@ -21,14 +19,22 @@ export default function ProductCard({ product }) {
   const style = BRAND_STYLE[product.brand] ?? { bg: 'bg-stone-50', text: 'text-stone-600', activeBorder: 'border-stone-400' }
 
   // ── Initial state depending on product type ───────────
-  const initBase  = product.type === PRODUCT_TYPE.TINTABLE ? product.bases[0]        : null
-  const initPack  = product.type === PRODUCT_TYPE.TINTABLE ? product.bases[0].packs[0] : product.packs[0]
+  // (skip any base that has no packs filled in yet)
+  const initBase  = product.type === PRODUCT_TYPE.TINTABLE ? product.bases.find(b => b.packs?.length) : null
+  const initPack  = product.type === PRODUCT_TYPE.TINTABLE ? initBase.packs[0]   : product.packs[0]
   const initColor = product.type === PRODUCT_TYPE.READYMIX  ? product.colors[0]       : null
 
   const [selectedBase,  setSelectedBase]  = useState(initBase)
   const [selectedPack,  setSelectedPack]  = useState(initPack)
   const [selectedColor, setSelectedColor] = useState(initColor)
   const [added, setAdded] = useState(false)
+
+  // Reset the "Added" confirmation after a moment
+  useEffect(() => {
+    if (!added) return
+    const timer = setTimeout(() => setAdded(false), 1500)
+    return () => clearTimeout(timer)
+  }, [added])
 
   // ── When user picks a different base ─────────────────
   // Try to keep the same size — if that size exists in the
@@ -55,7 +61,6 @@ export default function ProductCard({ product }) {
     // pass the pack object directly — it already has the correct price
     addToCart(product, selectedPack, option)
     setAdded(true)
-    setTimeout(() => setAdded(false), 1500)
   }
 
   return (
@@ -73,12 +78,19 @@ export default function ProductCard({ product }) {
       </div>
       {/* Product image */}
       <div className="w-full h-40 relative">
-        <Image
-          src={product.image}
-          alt={product.name}
-          fill
-          className="object-contain"
-        />
+        {product.image ? (
+          <Image
+            src={product.image}
+            alt={product.name}
+            fill
+            sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+            className="object-contain"
+          />
+        ) : (
+          <div className={`w-full h-full rounded-lg flex items-center justify-center text-4xl ${style.bg}`}>
+            🎨
+          </div>
+        )}
       </div>
 
       {/* Description */}
@@ -174,38 +186,37 @@ export default function ProductCard({ product }) {
       </div>
 
       {/* ── Price (live: updates with base + pack) ─────── */}
-    {/* ── Price (live: updates with base + pack) ─────── */}
-<div className="flex flex-col gap-0.5">
-  <div className="flex items-baseline gap-1.5 flex-wrap">
-    <span className="text-orange-700 font-extrabold text-xl">
-      ₹{selectedPack?.price?.toLocaleString('en-IN') ?? '—'}
-    </span>
-    {selectedPack?.mrp > selectedPack?.price && (
-      <>
-        <span className="text-stone-400 text-sm line-through">
-          ₹{selectedPack.mrp.toLocaleString('en-IN')}
+      <div className="flex flex-col gap-0.5">
+        <div className="flex items-baseline gap-1.5 flex-wrap">
+          <span className="text-orange-700 font-extrabold text-xl">
+            ₹{selectedPack?.price?.toLocaleString('en-IN') ?? '—'}
+          </span>
+          {selectedPack?.mrp > selectedPack?.price && (
+            <>
+              <span className="text-stone-400 text-sm line-through">
+                ₹{selectedPack.mrp.toLocaleString('en-IN')}
+              </span>
+              <span className="text-green-600 text-xs font-semibold">
+                {Math.round(((selectedPack.mrp - selectedPack.price) / selectedPack.mrp) * 100)}% off
+              </span>
+            </>
+          )}
+        </div>
+        <span className="text-stone-400 text-xs">
+          / {selectedPack?.size}
+          {product.type === PRODUCT_TYPE.TINTABLE && selectedBase
+            ? ` · ${selectedBase.name}`
+            : ''}
+          {product.type === PRODUCT_TYPE.READYMIX && selectedColor
+            ? ` · ${selectedColor.name}`
+            : ''}
         </span>
-        <span className="text-green-600 text-xs font-semibold">
-          {Math.round(((selectedPack.mrp - selectedPack.price) / selectedPack.mrp) * 100)}% off
-        </span>
-      </>
-    )}
-  </div>
-  <span className="text-stone-400 text-xs">
-    / {selectedPack?.size}
-    {product.type === PRODUCT_TYPE.TINTABLE && selectedBase
-      ? ` · ${selectedBase.name}`
-      : ''}
-    {product.type === PRODUCT_TYPE.READYMIX && selectedColor
-      ? ` · ${selectedColor.name}`
-      : ''}
-  </span>
-  {selectedPack?.mrp > selectedPack?.price && (
-    <span className="text-[0.65rem] text-green-700 font-medium">
-      You save ₹{(selectedPack.mrp - selectedPack.price).toLocaleString('en-IN')}
-    </span>
-  )}
-</div>
+        {selectedPack?.mrp > selectedPack?.price && (
+          <span className="text-[0.65rem] text-green-700 font-medium">
+            You save ₹{(selectedPack.mrp - selectedPack.price).toLocaleString('en-IN')}
+          </span>
+        )}
+      </div>
 
       {/* ── Add to order button ───────────────────────── */}
       <button

@@ -1,29 +1,98 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
-import { supabase } from '@/lib/supabase'
 import { resend } from '@/lib/resend'
+import { resolveOrderLine } from '@/data/products'
+
+const PHONE_RE = /^[6-9]\d{9}$/
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const MAX_LINES = 50
+const MAX_QTY   = 999
+
+// ── Basic per-IP rate limit ──
+// In-memory, so it resets on redeploy and isn't shared between
+// serverless instances — enough to stop casual spamming of the
+// email endpoint. Use Upstash/Vercel KV for a stronger limit.
+const RATE_WINDOW_MS = 10 * 60 * 1000
+const RATE_MAX       = 5
+const hits = new Map()
+
+function isRateLimited(ip) {
+  const now = Date.now()
+  const recent = (hits.get(ip) ?? []).filter(t => now - t < RATE_WINDOW_MS)
+  recent.push(now)
+  hits.set(ip, recent)
+  return recent.length > RATE_MAX
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+const rupees = n => `₹${n.toLocaleString('en-IN')}`
 
 export async function POST(request) {
   try {
-    const payload = await request.json()
-    const { customer, items, total_items, estimated_total, placed_at } = payload
-
-    // ── Backend validation (mirrors your frontend validate()) ──
-    if (!customer?.name || !customer?.phone || !customer?.email || !items?.length) {
-      return Response.json({ error: 'Missing required fields' }, { status: 400 })
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'unknown'
+    if (isRateLimited(ip)) {
+      return Response.json({ error: 'Too many orders. Please call us instead.' }, { status: 429 })
     }
+
+    const payload = await request.json()
+    const { customer, items } = payload ?? {}
+
+    // ── Backend validation (mirrors the frontend validate()) ──
+    const name  = String(customer?.name  ?? '').trim()
+    const phone = String(customer?.phone ?? '').trim()
+    const email = String(customer?.email ?? '').trim()
+    const notes = String(customer?.notes ?? '').trim()
+
+    if (!name || name.length > 100)  return badRequest('Enter a valid name')
+    if (!PHONE_RE.test(phone))       return badRequest('Enter a valid 10-digit mobile number')
+    if (!EMAIL_RE.test(email) || email.length > 200) return badRequest('Enter a valid email address')
+    if (notes.length > 1000)         return badRequest('Notes are too long')
+    if (!Array.isArray(items) || !items.length || items.length > MAX_LINES) {
+      return badRequest('Your order is empty or too large')
+    }
+
+    // ── Prices come from data/products.js, never from the browser ──
+    const lines = []
+    for (const item of items) {
+      const qty  = Number(item?.qty)
+      const line = resolveOrderLine(Number(item?.productId), item?.pack, item?.option ?? null)
+      if (!line || !Number.isInteger(qty) || qty < 1 || qty > MAX_QTY) {
+        return badRequest('One of the items in your order is no longer available. Please refresh and try again.')
+      }
+      lines.push({
+        product_id: line.product.id,
+        product:    line.product.name,
+        brand:      line.product.brand,
+        pack:       line.pack.size,
+        option:     line.option,
+        price:      line.pack.price,
+        qty,
+        subtotal:   line.pack.price * qty,
+      })
+    }
+
+    const total_items     = lines.reduce((sum, l) => sum + l.qty, 0)
+    const estimated_total = lines.reduce((sum, l) => sum + l.subtotal, 0)
 
     // ── 1. Save to Supabase ──
     const { data: order, error } = await supabaseAdmin
       .from('orders')
       .insert({
-        customer_name: customer.name,
-        phone: customer.phone,
-        email: customer.email,
-        notes: customer.notes || null,
-        items,
+        customer_name: name,
+        phone,
+        email,
+        notes: notes || null,
+        items: lines,
         total_items,
         estimated_total,
-        placed_at,
+        placed_at: new Date().toISOString(),
       })
       .select()
       .single()
@@ -34,22 +103,56 @@ export async function POST(request) {
     }
 
     // ── 2. Email confirmation via Resend ──
-    const itemRows = items.map(item => `
+    // The order is already saved, so an email failure must not
+    // turn into an error response (the customer would re-submit).
+    try {
+      const emailHtml = buildEmail({ name, phone, notes, lines, total_items, estimated_total })
+      const shopEmail = process.env.SHOP_ORDER_EMAIL
+
+      const { error: emailError } = await resend.emails.send({
+        // onboarding@resend.dev can only deliver to your own Resend account.
+        // Verify a domain in Resend and set RESEND_FROM, e.g. "Sri Sai Paints <orders@yourdomain.com>".
+        from: process.env.RESEND_FROM || 'onboarding@resend.dev',
+        to: email,
+        ...(shopEmail && { bcc: shopEmail }),
+        subject: 'Order Received — Sri Sai Ramakrishna Paints & Hardware',
+        html: emailHtml,
+      })
+
+      if (emailError) console.error('Resend email error:', emailError)
+    } catch (emailErr) {
+      console.error('Resend email error:', emailErr)
+    }
+
+    return Response.json({ success: true, orderId: order.id })
+
+  } catch (err) {
+    console.error('Order API error:', err)
+    return Response.json({ error: 'Something went wrong' }, { status: 500 })
+  }
+}
+
+function badRequest(message) {
+  return Response.json({ error: message }, { status: 400 })
+}
+
+function buildEmail({ name, phone, notes, lines, total_items, estimated_total }) {
+  const itemRows = lines.map(item => `
       <tr>
         <td style="padding:10px 8px;border-bottom:1px solid #e7e5e4;">
-          <div style="font-weight:600;color:#1c1917;">${item.product}</div>
-          <div style="font-size:13px;color:#78716c;">${item.brand}${item.option ? ' · ' + item.option : ''} · ${item.pack}</div>
+          <div style="font-weight:600;color:#1c1917;">${escapeHtml(item.product)}</div>
+          <div style="font-size:13px;color:#78716c;">${escapeHtml(item.brand)}${item.option ? ' · ' + escapeHtml(item.option) : ''} · ${escapeHtml(item.pack)}</div>
         </td>
         <td style="padding:10px 8px;border-bottom:1px solid #e7e5e4;text-align:center;color:#44403c;">${item.qty}</td>
-        <td style="padding:10px 8px;border-bottom:1px solid #e7e5e4;text-align:right;color:#44403c;">₹${item.price.toLocaleString('en-IN')}</td>
-        <td style="padding:10px 8px;border-bottom:1px solid #e7e5e4;text-align:right;font-weight:600;color:#1c1917;">₹${item.subtotal.toLocaleString('en-IN')}</td>
+        <td style="padding:10px 8px;border-bottom:1px solid #e7e5e4;text-align:right;color:#44403c;">${rupees(item.price)}</td>
+        <td style="padding:10px 8px;border-bottom:1px solid #e7e5e4;text-align:right;font-weight:600;color:#1c1917;">${rupees(item.subtotal)}</td>
       </tr>
     `).join('')
 
-    const emailHtml = `
+  return `
       <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;color:#1c1917;">
         <h2 style="margin-bottom:4px;">Order Received</h2>
-        <p style="color:#57534e;margin-top:0;">Hi ${customer.name}, thanks for your order! We'll call or WhatsApp you on ${customer.phone} shortly to confirm pricing and availability.</p>
+        <p style="color:#57534e;margin-top:0;">Hi ${escapeHtml(name)}, thanks for your order! We'll call or WhatsApp you on ${escapeHtml(phone)} shortly to confirm pricing and availability.</p>
 
         <table style="width:100%;border-collapse:collapse;margin-top:16px;">
           <thead>
@@ -66,32 +169,12 @@ export async function POST(request) {
         </table>
 
         <div style="text-align:right;margin-top:12px;font-size:16px;">
-          <strong>Total (${total_items} item${total_items !== 1 ? 's' : ''}): ₹${estimated_total.toLocaleString('en-IN')}</strong>
+          <strong>Total (${total_items} item${total_items !== 1 ? 's' : ''}): ${rupees(estimated_total)}</strong>
         </div>
 
-        ${customer.notes ? `<p style="margin-top:16px;color:#57534e;"><strong>Notes:</strong> ${customer.notes}</p>` : ''}
+        ${notes ? `<p style="margin-top:16px;color:#57534e;"><strong>Notes:</strong> ${escapeHtml(notes)}</p>` : ''}
 
-        <p style="margin-top:24px;font-size:13px;color:#a8a29e;">Sri Sai Ramakrishna Paints & Hardware · Guntur, AP</p>
+        <p style="margin-top:24px;font-size:13px;color:#a8a29e;">Sri Sai Ramakrishna Paints &amp; Hardware · Guntur, AP</p>
       </div>
     `
-
-  const { data: emailData, error: emailError } = await resend.emails.send({
-  from: 'onboarding@resend.dev',
-  to: customer.email,
-  subject: 'Order Received — Sri Sai Ramakrishna Paints & Hardware',
-  html: emailHtml,
-})
-
-if (emailError) {
-  console.error('Resend email error:', emailError)
-} else {
-  console.log('Email sent successfully:', emailData)
-}
-
-    return Response.json({ success: true, orderId: order.id })
-
-  } catch (err) {
-    console.error('Order API error:', err)
-    return Response.json({ error: 'Something went wrong' }, { status: 500 })
-  }
 }

@@ -5,10 +5,11 @@ import Link from 'next/link'
 import { useCart } from '@/context/CartContext'
 
 export default function OrderPage() {
-  const { cart, updateQty, removeFromCart, clearCart, totalItems, totalPrice } = useCart()
+  const { cart, loaded, updateQty, removeFromCart, clearCart, totalItems, totalPrice } = useCart()
   const [form,   setForm]   = useState({ name: '', phone: '', email: '', notes: '' })
   const [status, setStatus] = useState('idle')
   const [errors, setErrors] = useState({})
+  const [submitError, setSubmitError] = useState('')
 
   function validate() {
     const errs = {}
@@ -26,39 +27,35 @@ export default function OrderPage() {
     setStatus('submitting')
     setErrors({})
 
+    // Only identifiers + qty are sent — the server looks up prices itself
     const payload = {
       customer: form,
       items: cart.map(i => ({
-        product:  i.name,
-        brand:    i.brand,
-        pack:     i.pack.size,
-        price:    i.pack.price,
-        option:   i.option,
-        qty:      i.qty,
-        subtotal: i.pack.price * i.qty,
+        productId: i.id,
+        pack:      i.pack.size,
+        option:    i.option,
+        qty:       i.qty,
       })),
-      total_items: totalItems,
-      estimated_total: totalPrice,
-      placed_at: new Date().toISOString(),
     }
 
     try {
-  const res = await fetch('/api/orders', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  })
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
 
-  if (!res.ok) {
-    const data = await res.json()
-    throw new Error(data.error)
-  }
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error)
+      }
 
-  setStatus('success')
-  clearCart()
-} catch {
-  setStatus('error')
-}
+      setStatus('success')
+      clearCart()
+    } catch (err) {
+      setSubmitError(err.message || '')
+      setStatus('error')
+    }
   }
 
   if (status === 'success') {
@@ -68,7 +65,7 @@ export default function OrderPage() {
           <div className="text-6xl mb-5">✅</div>
           <h2 className="text-2xl font-extrabold mb-2">Order Received!</h2>
           <p className="text-stone-500 text-sm leading-relaxed mb-6">
-            Thanks <strong>{form.name}</strong>! We'll confirm your order on{' '}
+            Thanks <strong>{form.name}</strong>! We&apos;ll confirm your order on{' '}
             <strong>{form.phone}</strong> and send details to <strong>{form.email}</strong>.
           </p>
           <Link href="/products" className="inline-block bg-orange-700 hover:bg-orange-800 text-white px-6 py-3 rounded-xl font-bold text-sm transition-colors no-underline">
@@ -78,6 +75,9 @@ export default function OrderPage() {
       </div>
     )
   }
+
+  // Wait for the saved cart to load so "empty" doesn't flash
+  if (!loaded) return <div className="min-h-screen bg-stone-50" />
 
   if (cart.length === 0) {
     return (
@@ -107,7 +107,7 @@ export default function OrderPage() {
           <div className="bg-white border border-stone-200 rounded-2xl p-7">
             <h2 className="text-lg font-bold mb-1">Your Details</h2>
             <p className="text-stone-400 text-xs mb-6 leading-relaxed">
-              We'll call or WhatsApp you on this number to confirm the order and pricing.
+              We&apos;ll call or WhatsApp you on this number to confirm the order and pricing.
             </p>
 
             <Field label="Full Name" error={errors.name}>
@@ -136,7 +136,9 @@ export default function OrderPage() {
             </Field>
 
             {status === 'error' && (
-              <p className="text-red-600 text-sm mb-4">Something went wrong. Please try again or call us directly.</p>
+              <p className="text-red-600 text-sm mb-4">
+                {submitError || 'Something went wrong.'} Please try again or call us directly.
+              </p>
             )}
 
             <button onClick={handleSubmit} disabled={status === 'submitting'}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { products, brands, categories } from '@/data/products'
+import { products, brands, categories, filterProducts } from '@/data/products'
 import ProductCard from '@/components/ProductCard'
 
 export default function ProductsPage() {
@@ -9,15 +9,10 @@ export default function ProductsPage() {
   const [activeCategory, setActiveCategory] = useState('All')
   const [search,         setSearch]         = useState('')
 
-  const filtered = useMemo(() => {
-    return products.filter(p => {
-      const matchBrand    = activeBrand    === 'All' || p.brand    === activeBrand
-      const matchCategory = activeCategory === 'All' || p.category === activeCategory
-      const matchSearch   = p.name.toLowerCase().includes(search.toLowerCase()) ||
-                            p.brand.toLowerCase().includes(search.toLowerCase())
-      return matchBrand && matchCategory && matchSearch
-    })
-  }, [activeBrand, activeCategory, search])
+  const filtered = useMemo(
+    () => filterProducts(products, activeBrand, activeCategory, search),
+    [activeBrand, activeCategory, search]
+  )
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -26,7 +21,7 @@ export default function ProductsPage() {
       <div className="bg-white border-b border-stone-200 px-[5%] py-10">
         <p className="text-orange-700 text-[0.7rem] font-bold uppercase tracking-widest mb-1">Catalogue</p>
         <h1 className="text-3xl font-extrabold tracking-tight mb-1">Our Products</h1>
-        <p className="text-stone-500 text-sm">Browse and add products to your order. We'll confirm by phone or WhatsApp.</p>
+        <p className="text-stone-500 text-sm">Browse and add products to your order. We&apos;ll confirm by phone or WhatsApp.</p>
       </div>
 
       <div className="px-[5%] py-8">

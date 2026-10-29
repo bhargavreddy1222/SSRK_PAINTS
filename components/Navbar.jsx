@@ -28,7 +28,7 @@ export default function Navbar() {
       {/* Top bar */}
       <div className="bg-orange-700 text-white px-[5%] py-2 flex flex-wrap justify-between items-center gap-1 text-xs">
         <span className="opacity-90 flex items-center gap-1">
-          📍 Your Address, Guntur, Andhra Pradesh
+          📍 1st Line, Buchaiah Thota, Guntur, Andhra Pradesh
         </span>
         <div className="flex flex-wrap items-center gap-3">
           <a href="tel:+919949417980" className="font-semibold hover:opacity-80 transition-opacity">
@@ -39,7 +39,7 @@ export default function Navbar() {
             WhatsApp
           </a>
           <span className="opacity-40">|</span>
-          <span className="opacity-80">Mon–Sat: 9am – 8pm</span>
+          <span className="opacity-80">Mon–Sat: 9am – 8pm · Sun: 10am – 5pm</span>
         </div>
       </div>
 

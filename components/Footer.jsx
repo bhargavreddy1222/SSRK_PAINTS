@@ -52,17 +52,17 @@ export default function Footer() {
               </a>
             </li>
             <li className="text-stone-400 text-sm leading-relaxed">
-              Your Address, Guntur,<br />Andhra Pradesh
+              1st Line, Buchaiah Thota,<br />Guntur, Andhra Pradesh 522001
             </li>
             <li className="text-stone-400 text-sm">
-              Mon–Sat: 9am – 8pm
+              Mon–Sat: 9am – 8pm<br />Sun: 10am – 5pm
             </li>
           </ul>
         </div>
       </div>
 
       <div className="flex flex-wrap justify-between items-center gap-3 text-xs text-stone-600">
-        <span>© 2025 Sri Sai Ramakrishna Paints &amp; Hardware. All rights reserved.</span>
+        <span>© {new Date().getFullYear()} Sri Sai Ramakrishna Paints &amp; Hardware. All rights reserved.</span>
         <span>Guntur, Andhra Pradesh</span>
       </div>
     </footer>

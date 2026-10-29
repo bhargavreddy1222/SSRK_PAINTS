@@ -90,7 +90,7 @@ const DISTEMPER_COLORS = [
 //    packs: [{ size, price }]    ← just pick a size
 // ─────────────────────────────────────────────────────────
 
-export const products = [
+const catalogue = [
 
   // ╔══════════════════════════════════════════════════════╗
   // ║  ASIAN PAINTS                                        ║
@@ -122,11 +122,11 @@ export const products = [
   {
     id: 2,
     brand:    'Asian Paints',
-    name:     'Apex Exterior Emulsion',
-    category: 'Exterior',
+    name:     'Royale Shyne',
+    category: 'Interior',
     type:     PRODUCT_TYPE.TINTABLE,
-    image: '/image/asian/apex-exterior.jpg',
-    description: 'Weatherproof exterior emulsion, UV and rain resistant with long-lasting colour.',
+    image: '/image/asian/interior-walls-royale-shyne.jpg',
+    description: 'Premium interior emulsion with a soft sheen finish, rich colour and easy washability.',
     bases: [
       {
         id: 'wb', name: 'AB2', desc: 'For white and light pastel shades',
@@ -161,7 +161,7 @@ export const products = [
   {
     id: 3,
     brand:    'Asian Paints',
-    name:     'Tractor Emulsion',
+    name:     'Royale Shyne Emulsion',
     category: 'Interior',
     type:     PRODUCT_TYPE.TINTABLE,
     image: '/image/asian/tractor-emulsion.jpg',
@@ -182,11 +182,11 @@ export const products = [
   {
     id: 4,
     brand:    'Asian Paints',
-    name:     'sparc interior Wall Primer',
-    category: 'Primer',
+    name:     'Ultima Protek',
+    category: 'Exterior',
     type:     PRODUCT_TYPE.CLEAR,
-    image: '/image/asian/sparc-interior.jpg',
-    description: 'Interior wall primer for better adhesion and uniform paint coverage.',
+    image: '/image/asian/ultima_protek.jpg',
+    description: 'Premium exterior emulsion with long-lasting protection against rain, sun and algae.',
     packs: [
       {size: '1L', mrp: 250, price: 150  },
       { size: '4L', mrp: 1000, price: 550  },
@@ -197,11 +197,11 @@ export const products = [
   {
     id:5,
     brand:    'Asian Paints',
-    name:     'sparc Exterior Wall Primer',
-    category: 'Primer',
+    name:     'Apex Ultima',
+    category: 'Exterior',
     type:     PRODUCT_TYPE.CLEAR,
-    image: '/image/asian/sparc-exterior.jpg',
-    description: 'Exterior wall primer for better adhesion and uniform paint coverage.',
+    image: '/image/asian/apex-exterior.jpg',
+    description: 'Exterior emulsion with strong weather resistance and long-lasting colour.',
     packs: [
       {size: '1L', mrp: 250, price: 180  },
       { size: '4L', mrp: 1000, price: 650  },
@@ -227,7 +227,7 @@ export const products = [
   {
     id:7,
     brand:    'Asian Paints',
-    name:     'Ace Exterior emulsion',
+    name:     'Apex Exterior emulsion',
     category: 'Exterior',
     type:     PRODUCT_TYPE.TINTABLE,
     image: '/image/asian/ace-exterior.jpg',
@@ -266,7 +266,7 @@ export const products = [
 {
   id:8,
   brand:    'Asian Paints',
-  name:     'Tractor shyne interior emulsion',
+  name:     'premium shyne interior emulsion',
   category: 'Interior',
   type:     PRODUCT_TYPE.TINTABLE,
   image: '/image/asian/tractor-emulsion-shyne.jpg',
@@ -338,11 +338,11 @@ export const products = [
 {
   id:10,
   brand:    'Asian Paints',
-  name:     'Royale shyne interior emulsion',
-  category: 'Interior',
+  name:     'Apex shyne emulsion',
+  category: 'Exterior',
   type:     PRODUCT_TYPE.TINTABLE,
-  image: '/image/asian/interior-walls-royale-shyne.jpg',
-  description: 'Economy interior emulsion with good coverage and clean, smooth finish.',
+  image: '/image/asian/exterior-walls-apex-shyne-dust-proof.jpg',
+  description: 'Exterior sheen emulsion with dust-proof finish and good weather resistance.',
   bases: [
     {
      
@@ -360,10 +360,10 @@ export const products = [
 {
   id:11,
   brand:    'Asian Paints',
-  name:     'Royale shyne interior emulsion',
+  name:     'Tractor Shyne Emulsion',
   category: 'Interior',
   type:     PRODUCT_TYPE.TINTABLE,
-  image: '/image/asian/interior-walls-royale-shyne.jpg',
+  image: '/image/asian/tractor-emulsion-shyne.jpg',
   description: 'Economy interior emulsion with good coverage and clean, smooth finish.',
   bases: [
     {
@@ -382,10 +382,10 @@ export const products = [
 {
   id:12,
   brand:    'Asian Paints',
-  name:     'Royale glitz interior emulsion',
+  name:     'Tractor emulsion',
   category: 'Interior',
   type:     PRODUCT_TYPE.TINTABLE,
-  image: '/image/asian/royale-glitz.jpg',
+  image: '/image/asian/tractor-emulsion.jpg',
   description: 'Economy interior emulsion with good coverage and clean, smooth finish.',
   bases: [
     {id : 'wb', name: 'GL3', desc: 'For white and light pastel shades',
@@ -417,20 +417,91 @@ export const products = [
     },  
   ],
 },
+{
+  id: 14,
+  brand:    'Asian Paints',
+  name:     'Tractor sparc shyne emulsion',
+  category: 'Interior',
+  type:     PRODUCT_TYPE.TINTABLE,
+  image : '',
+  description: 'Economy interior emulsion with good coverage and clean, smooth finish.',
+  bases: [
+],
+},
+{
+  id: 15,
+  brand:    'Asian Paints',
+  name:     'Tractor sparc emulsion',
+  category: 'Interior',
+  type:     PRODUCT_TYPE.TINTABLE,
+  image : '',
+  description: 'Economy interior emulsion with good coverage and clean, smooth finish.',
+  bases: [],
+},
+{
+  id: 16,
+  brand:    'Asian Paints',
+  name:     'Ace shyne emulsion',
+  category: 'Exterior',
+  type:     PRODUCT_TYPE.TINTABLE,
+  image : '',
+  description: 'Exterior emulsion with good coverage and weather resistance.',
+  bases: [],
+},
+{
+  id: 17,
+  brand:    'Asian Paints',
+  name:     'Ace emulsion',
+  category: 'Exterior',
+  type:     PRODUCT_TYPE.TINTABLE,
+  image : '',
+  description: 'Exterior emulsion with good coverage and weather resistance.',
+  bases: [],
+},
+{
+  id: 18,
+  brand:    'Asian Paints',
+  name:     'Ace sparc shyne emulsion',
+  category: 'Exterior',
+  type:     PRODUCT_TYPE.TINTABLE,
+  image : '',
+  description: 'Exterior emulsion with good coverage and weather resistance.',
+  bases: [],
+},
+{
+  id: 19,
+  brand:    'Asian Paints',
+  name:     'Ace sparc emulsion',
+  category: 'Exterior',
+  type:     PRODUCT_TYPE.TINTABLE,
+  image : '',
+  description: 'Exterior emulsion with good coverage and weather resistance.',
+  bases: [],
+},
+{
+  id: 20,
+  brand:    'Asian Paints',
+  name:     'neo bharath exterior emulsion',
+  category: 'Exterior',
+  type:     PRODUCT_TYPE.TINTABLE,
+  image : '',
+  description: 'Exterior emulsion with good coverage and weather resistance.',
+  bases: [],
+},
   // ╔══════════════════════════════════════════════════════╗
   // ║  BERGER PAINTS                                       ║
   // ╚══════════════════════════════════════════════════════╝
 
   {
-    id: 13,
+    id: 21,
     brand:    'Berger Paints',
-    name:     'Silk Luxury Emulsion',
+    name:     'Silk Glamor Emulsion',
     category: 'Interior',
     type:     PRODUCT_TYPE.TINTABLE,
     description: 'Smooth silky finish emulsion with high sheen and excellent washability.',
     bases: [
       {
-        id: 'wb', name: 'White Base', desc: 'For white and light pastel shades',
+        id: 'PO', name: 'White Base', desc: 'For white and light pastel shades',
         packs: [
           { size: '1L', mrp: 800, price: 780   },
           { size: '4L', mrp: 3000, price: 2950  },
@@ -439,7 +510,7 @@ export const products = [
         ],
       },
       {
-        id: 'mb', name: 'Medium Base', desc: 'For medium and mid-tone shades',
+        id: 'P1', name: 'Medium Base', desc: 'For medium and mid-tone shades',
         packs: [
           { size: '1L', mrp: 800, price: 800   },
           { size: '4L', mrp: 3000, price: 3050  },
@@ -448,7 +519,7 @@ export const products = [
         ],
       },
       {
-        id: 'db', name: 'Deep Base', desc: 'For dark and deep shades',
+        id: 'N2', name: 'Deep Base', desc: 'For dark and deep shades',
         packs: [
           { size: '1L', mrp: 800, price: 820   },
           { size: '4L', mrp: 3000, price: 3150  },
@@ -456,13 +527,19 @@ export const products = [
           { size: '20L', mrp: 14000, price: 14800 },
         ],
       },
+      {
+        id: 'YELLOW', name: 'Extra Deep Base', desc: 'For very dark and deep shades',
+        packs: [
+          { size: '1L', mrp: 800, price: 840   },
+        ]
+      },
     ],
   },
 
   {
-    id: 14,
+    id: 22,
     brand:    'Berger Paints',
-    name:     'Weathercoat',
+    name:     'Silk touch Emulsion',
     category: 'Exterior',
     type:     PRODUCT_TYPE.TINTABLE,
     description: 'All-weather exterior protection — durable, fade-resistant, and anti-algal.',
@@ -497,13 +574,12 @@ export const products = [
     ],
   },
 
-
   // ╔══════════════════════════════════════════════════════╗
   // ║  SHEENLAC                                            ║
   // ╚══════════════════════════════════════════════════════╝
 
   {
-    id: 15,
+    id: 23,
     brand:    'Sheenlac',
     name:     'Synthetic Enamel',
     category: 'Enamel',
@@ -518,7 +594,7 @@ export const products = [
   },
 
   {
-    id: 16,
+    id: 24,
     brand:    'Sheenlac',
     name:     'NC Lacquer',
     category: 'Wood Finish',
@@ -533,7 +609,7 @@ export const products = [
   },
 
   {
-    id: 17,
+    id: 25,
     brand:    'Sheenlac',
     name:     'PU Wood Finish',
     category: 'Wood Finish',
@@ -553,7 +629,7 @@ export const products = [
   // ╚══════════════════════════════════════════════════════╝
 
   {
-    id: 18,
+    id: 26,
     brand:    'Saincoat',
     name:     'Interior Emulsion',
     category: 'Interior',
@@ -588,7 +664,7 @@ export const products = [
   },
 
   {
-    id: 19,
+    id: 27,
     brand:    'Saincoat',
     name:     'Exterior Emulsion',
     category: 'Exterior',
@@ -623,7 +699,7 @@ export const products = [
   },
 
   {
-    id: 20,
+    id: 28,
     brand:    'Saincoat',
     name:     'Distemper',
     category: 'Interior',
@@ -643,7 +719,7 @@ export const products = [
   // ╚══════════════════════════════════════════════════════╝
 
   {
-    id: 21,
+    id: 29,
     brand:    'JK Wall Care',
     name:     'White Cement Putty',
     category: 'Wall Putty',
@@ -663,7 +739,7 @@ export const products = [
   // ╚══════════════════════════════════════════════════════╝
 
   {
-    id: 22,
+    id: 30,
     brand:    'Birla Wall Care',
     name:     'White Putty',
     category: 'Wall Putty',
@@ -685,9 +761,10 @@ export const filterProducts = (list, brand, category, search = '') =>
   list.filter(p => {
     const matchBrand    = brand    === 'All' || p.brand    === brand
     const matchCategory = category === 'All' || p.category === category
-    const matchSearch   = !search  ||
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.brand.toLowerCase().includes(search.toLowerCase())
+    const query         = search.trim().toLowerCase()
+    const matchSearch   = !query ||
+      [p.name, p.brand, p.category, p.description]
+        .some(field => field?.toLowerCase().includes(query))
     return matchBrand && matchCategory && matchSearch
   })
 
@@ -710,4 +787,40 @@ export const getPrice = (product, baseId, size) => {
     return pack?.price ?? null
   }
   return product.packs?.find(p => p.size === size)?.price ?? null
+}
+
+// Products still being filled in (no bases/packs yet) are hidden
+// from the shop until they have at least one pack to order.
+function hasPacks(product) {
+  return product.type === PRODUCT_TYPE.TINTABLE
+    ? product.bases?.some(base => base.packs?.length)
+    : product.packs?.length > 0
+}
+
+export const products = catalogue.filter(hasPacks)
+
+// Looks up the real product + pack for an order line.
+// `option` is the base name (tintable) or colour name (readymix).
+// Returns null if any part doesn't exist — used by the order API
+// so prices always come from this file, never from the browser.
+export function resolveOrderLine(productId, size, option) {
+  const product = products.find(p => p.id === productId)
+  if (!product) return null
+
+  let packs = product.packs
+  let optionName = null
+  if (product.type === PRODUCT_TYPE.TINTABLE) {
+    const base = product.bases.find(b => b.name === option)
+    if (!base) return null
+    packs = base.packs
+    optionName = base.name
+  } else if (product.type === PRODUCT_TYPE.READYMIX) {
+    const color = product.colors.find(c => c.name === option)
+    if (!color) return null
+    optionName = color.name
+  }
+
+  const pack = packs?.find(p => p.size === size)
+  if (!pack) return null
+  return { product, pack, option: optionName }
 }

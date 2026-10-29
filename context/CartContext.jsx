@@ -1,16 +1,53 @@
 'use client'
 
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
+import { resolveOrderLine } from '@/data/products'
 
 const CartContext = createContext(null)
+const STORAGE_KEY = 'ssr-cart-v1'
+
+// Rebuilds saved cart lines from the current product data, so a
+// changed price is picked up and removed products are dropped.
+function loadCart() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]')
+    return saved.flatMap(({ id, size, option, qty }) => {
+      const line = resolveOrderLine(id, size, option)
+      if (!line || !Number.isInteger(qty) || qty < 1) return []
+      const _key = `${id}-${size}-${option ?? 'none'}`
+      return [{ ...line.product, pack: line.pack, option: line.option, qty, _key }]
+    })
+  } catch {
+    return []
+  }
+}
 
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([])
+  const [loaded, setLoaded] = useState(false)
+
+  // Load after mount (localStorage isn't available during SSR,
+  // so reading it during render would cause a hydration mismatch)
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCart(loadCart())
+    setLoaded(true)
+  }, [])
+
+  useEffect(() => {
+    if (!loaded) return
+    try {
+      const saved = cart.map(i => ({ id: i.id, size: i.pack.size, option: i.option, qty: i.qty }))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(saved))
+    } catch {
+      // storage full or blocked — cart still works for this visit
+    }
+  }, [cart, loaded])
   //
   // Cart item shape:
   // {
   //   ...product,          ← all product fields
-  //   pack:   { size, price },   ← the selected pack (with correct price)
+  //   pack:   { size, mrp, price },   ← the selected pack (with correct price)
   //   option: string | null,     ← base name OR color name OR null
   //   qty:    number,
   //   _key:   string,            ← unique key: `${id}-${size}-${option}`
@@ -50,6 +87,7 @@ export function CartProvider({ children }) {
   return (
     <CartContext.Provider value={{
       cart,
+      loaded,
       addToCart,
       removeFromCart,
       updateQty,

@@ -65,7 +65,7 @@ export default function HomePage() {
 
           <div className="flex items-start gap-2 mt-8 text-sm text-stone-400">
             <span className="mt-0.5 flex-shrink-0">📍</span>
-            <span>1st Line,Buchaiah Thota, Landmark, Guntur, Andhra Pradesh — PIN 522001</span>
+            <span>1st Line, Buchaiah Thota, Guntur, Andhra Pradesh — PIN 522001</span>
           </div>
         </div>
       </section>
@@ -133,11 +133,11 @@ export default function HomePage() {
             <p className="text-orange-700 text-[0.7rem] font-bold uppercase tracking-widest mb-2">Find Us</p>
             <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-3">Come visit or give us a call</h2>
             <p className="text-stone-500 text-sm leading-relaxed mb-6">
-              Open 6 days a week. For bulk orders, call ahead and we'll have everything ready for you.
+              Open all week. For bulk orders, call ahead and we&apos;ll have everything ready for you.
             </p>
             <div className="flex flex-col gap-4 mb-6">
               {[
-                { icon: '📍', label: 'Address',    val: '1st Line,Buchaiah Thota, Landmark, Guntur, Andhra Pradesh — PIN 522001' },
+                { icon: '📍', label: 'Address',    val: '1st Line, Buchaiah Thota, Guntur, Andhra Pradesh — PIN 522001' },
                 { icon: '📞', label: 'Phone',      val: '+91 9949417980' },
                 { icon: '🕐', label: 'Shop Hours', val: 'Mon–Sat: 9am–8pm  ·  Sun: 10am–5pm' },
               ].map(item => (
@@ -152,14 +152,19 @@ export default function HomePage() {
             </div>
             <div className="flex flex-wrap gap-3">
               <a href="tel:+919949417980" className="flex items-center gap-2 bg-orange-700 hover:bg-orange-800 text-white px-5 py-3 rounded-xl font-bold text-sm transition-colors no-underline">📞 Call Now</a>
-              <a href="https://wa.me/9949417980" target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-[#25D366] hover:bg-[#1DA851] text-white px-5 py-3 rounded-xl font-bold text-sm transition-colors no-underline">WhatsApp</a>
+              <a href="https://wa.me/919949417980" target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-[#25D366] hover:bg-[#1DA851] text-white px-5 py-3 rounded-xl font-bold text-sm transition-colors no-underline">WhatsApp</a>
             </div>
           </div>
-          {/* Map placeholder */}
-          <div className="rounded-xl border border-stone-200 bg-stone-200 h-64 flex flex-col items-center justify-center gap-2 text-sm text-stone-500">
-            <span className="text-3xl">🗺️</span>
-            <span>Paste Google Maps iframe here</span>
-            <a href="https://share.google/SV44unc6GWj0dw246" target="_blank" rel="noreferrer" className="text-orange-700 font-bold text-xs hover:underline">
+          {/* Map */}
+          <div className="flex flex-col gap-2">
+            <iframe
+              title="Shop location on Google Maps"
+              src="https://www.google.com/maps?q=Buchaiah+Thota,+Guntur,+Andhra+Pradesh+522001&output=embed"
+              className="w-full h-64 rounded-xl border border-stone-200 bg-stone-200"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+            <a href="https://share.google/SV44unc6GWj0dw246" target="_blank" rel="noreferrer" className="self-end text-orange-700 font-bold text-xs hover:underline">
               Open in Google Maps →
             </a>
           </div>
