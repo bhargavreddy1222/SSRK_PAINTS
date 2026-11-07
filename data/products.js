@@ -72,6 +72,14 @@ const DISTEMPER_COLORS = [
 ]
 
 
+// Colour sets the admin product editor offers as presets
+export const COLOR_PRESETS = {
+  'Enamel colours':     ENAMEL_COLORS,
+  'NC Lacquer colours': NC_LACQUER_COLORS,
+  'PU Wood colours':    PU_COLORS,
+  'Distemper colours':  DISTEMPER_COLORS,
+}
+
 // ─────────────────────────────────────────────────────────
 //  STRUCTURE EXPLAINED
 //
@@ -90,7 +98,10 @@ const DISTEMPER_COLORS = [
 //    packs: [{ size, price }]    ← just pick a size
 // ─────────────────────────────────────────────────────────
 
-const catalogue = [
+// Seed / fallback catalogue. The live catalogue is the Supabase
+// `products` table (see lib/catalog.js and supabase/setup.sql) —
+// this list is only used if that table isn't reachable.
+export const catalogue = [
 
   // ╔══════════════════════════════════════════════════════╗
   // ║  ASIAN PAINTS                                        ║
@@ -791,7 +802,7 @@ export const getPrice = (product, baseId, size) => {
 
 // Products still being filled in (no bases/packs yet) are hidden
 // from the shop until they have at least one pack to order.
-function hasPacks(product) {
+export function hasPacks(product) {
   return product.type === PRODUCT_TYPE.TINTABLE
     ? product.bases?.some(base => base.packs?.length)
     : product.packs?.length > 0
@@ -799,12 +810,12 @@ function hasPacks(product) {
 
 export const products = catalogue.filter(hasPacks)
 
-// Looks up the real product + pack for an order line.
+// Looks up the real product + pack for an order line in `list`.
 // `option` is the base name (tintable) or colour name (readymix).
 // Returns null if any part doesn't exist — used by the order API
-// so prices always come from this file, never from the browser.
-export function resolveOrderLine(productId, size, option) {
-  const product = products.find(p => p.id === productId)
+// so prices always come from the catalogue, never from the browser.
+export function resolveOrderLine(list, productId, size, option) {
+  const product = list.find(p => p.id === productId)
   if (!product) return null
 
   let packs = product.packs

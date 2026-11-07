@@ -5,3 +5,27 @@
 html {
   scroll-behavior: smooth;
 }
+
+@layer utilities {
+  /* Horizontal chip rows that scroll without a visible scrollbar */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .animate-slide-in {
+    animation: slide-in 0.2s ease-out;
+  }
+}
+
+@keyframes slide-in {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .animate-slide-in { animation: none; }
+}

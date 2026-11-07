@@ -8,11 +8,11 @@ const STORAGE_KEY = 'ssr-cart-v1'
 
 // Rebuilds saved cart lines from the current product data, so a
 // changed price is picked up and removed products are dropped.
-function loadCart() {
+function loadCart(products) {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]')
     return saved.flatMap(({ id, size, option, qty }) => {
-      const line = resolveOrderLine(id, size, option)
+      const line = resolveOrderLine(products, id, size, option)
       if (!line || !Number.isInteger(qty) || qty < 1) return []
       const _key = `${id}-${size}-${option ?? 'none'}`
       return [{ ...line.product, pack: line.pack, option: line.option, qty, _key }]
@@ -22,7 +22,7 @@ function loadCart() {
   }
 }
 
-export function CartProvider({ children }) {
+export function CartProvider({ products, children }) {
   const [cart, setCart] = useState([])
   const [loaded, setLoaded] = useState(false)
 
@@ -30,9 +30,9 @@ export function CartProvider({ children }) {
   // so reading it during render would cause a hydration mismatch)
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setCart(loadCart())
+    setCart(loadCart(products))
     setLoaded(true)
-  }, [])
+  }, [products])
 
   useEffect(() => {
     if (!loaded) return

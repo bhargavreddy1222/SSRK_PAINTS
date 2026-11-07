@@ -1,27 +1,19 @@
-import { supabaseAdmin } from '@/lib/supabaseAdmin'
+import { supabaseAdmin, describeSupabaseError } from '@/lib/supabaseAdmin'
 import { resend } from '@/lib/resend'
 import { resolveOrderLine } from '@/data/products'
+import { getProducts } from '@/lib/catalog'
+import { orderRef } from '@/lib/orderStatus'
+import { clientIp, createRateLimiter } from '@/lib/rateLimit'
 
 const PHONE_RE = /^[6-9]\d{9}$/
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+// Also blocks characters that could add extra headers to the admin's mailto: link
+const EMAIL_RE = /^[^\s@<>"'(),:;?&]+@[^\s@<>"'(),:;?&]+\.[^\s@<>"'(),:;?&]+$/
 const MAX_LINES = 50
 const MAX_QTY   = 999
 
-// ── Basic per-IP rate limit ──
-// In-memory, so it resets on redeploy and isn't shared between
-// serverless instances — enough to stop casual spamming of the
-// email endpoint. Use Upstash/Vercel KV for a stronger limit.
-const RATE_WINDOW_MS = 10 * 60 * 1000
-const RATE_MAX       = 5
-const hits = new Map()
-
-function isRateLimited(ip) {
-  const now = Date.now()
-  const recent = (hits.get(ip) ?? []).filter(t => now - t < RATE_WINDOW_MS)
-  recent.push(now)
-  hits.set(ip, recent)
-  return recent.length > RATE_MAX
-}
+const orderLimiter = createRateLimiter({ windowMs: 10 * 60 * 1000, max: 5 })
+// Anyone can type any address into the form, so one address can't be flooded with our emails
+const emailLimiter = createRateLimiter({ windowMs: 60 * 60 * 1000, max: 3 })
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -36,10 +28,11 @@ const rupees = n => `₹${n.toLocaleString('en-IN')}`
 
 export async function POST(request) {
   try {
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'unknown'
-    if (isRateLimited(ip)) {
+    const ip = clientIp(request)
+    if (orderLimiter.isLimited(ip)) {
       return Response.json({ error: 'Too many orders. Please call us instead.' }, { status: 429 })
     }
+    orderLimiter.hit(ip)
 
     const payload = await request.json()
     const { customer, items } = payload ?? {}
@@ -52,17 +45,19 @@ export async function POST(request) {
 
     if (!name || name.length > 100)  return badRequest('Enter a valid name')
     if (!PHONE_RE.test(phone))       return badRequest('Enter a valid 10-digit mobile number')
-    if (!EMAIL_RE.test(email) || email.length > 200) return badRequest('Enter a valid email address')
+    // Email is optional; a skipped one is saved as '' (orders.email is NOT NULL)
+    if (email && (!EMAIL_RE.test(email) || email.length > 200)) return badRequest('Enter a valid email address')
     if (notes.length > 1000)         return badRequest('Notes are too long')
     if (!Array.isArray(items) || !items.length || items.length > MAX_LINES) {
       return badRequest('Your order is empty or too large')
     }
 
-    // ── Prices come from data/products.js, never from the browser ──
+    // ── Prices come from the catalogue, never from the browser ──
+    const catalogue = await getProducts()
     const lines = []
     for (const item of items) {
       const qty  = Number(item?.qty)
-      const line = resolveOrderLine(Number(item?.productId), item?.pack, item?.option ?? null)
+      const line = resolveOrderLine(catalogue, Number(item?.productId), item?.pack, item?.option ?? null)
       if (!line || !Number.isInteger(qty) || qty < 1 || qty > MAX_QTY) {
         return badRequest('One of the items in your order is no longer available. Please refresh and try again.')
       }
@@ -98,7 +93,7 @@ export async function POST(request) {
       .single()
 
     if (error) {
-      console.error('Supabase insert error:', error)
+      console.error('Supabase insert error:', describeSupabaseError(error))
       return Response.json({ error: 'Failed to save order' }, { status: 500 })
     }
 
@@ -108,18 +103,25 @@ export async function POST(request) {
     try {
       const emailHtml = buildEmail({ name, phone, notes, lines, total_items, estimated_total })
       const shopEmail = process.env.SHOP_ORDER_EMAIL
+      const emailKey = email.toLowerCase()
+      const emailCustomer = Boolean(email) && !emailLimiter.isLimited(emailKey)
+      if (emailCustomer) emailLimiter.hit(emailKey)
+      // No customer email → the shop still gets its copy
+      const to = emailCustomer ? email : shopEmail
 
-      const { error: emailError } = await resend.emails.send({
-        // onboarding@resend.dev can only deliver to your own Resend account.
-        // Verify a domain in Resend and set RESEND_FROM, e.g. "Sri Sai Paints <orders@yourdomain.com>".
-        from: process.env.RESEND_FROM || 'onboarding@resend.dev',
-        to: email,
-        ...(shopEmail && { bcc: shopEmail }),
-        subject: 'Order Received — Sri Sai Ramakrishna Paints & Hardware',
-        html: emailHtml,
-      })
+      if (to) {
+        const { error: emailError } = await resend.emails.send({
+          // onboarding@resend.dev can only deliver to your own Resend account.
+          // Verify a domain in Resend and set RESEND_FROM, e.g. "Sri Sai Paints <orders@yourdomain.com>".
+          from: process.env.RESEND_FROM || 'onboarding@resend.dev',
+          to,
+          ...(emailCustomer && shopEmail && { bcc: shopEmail }),
+          subject: `Order #${orderRef(order.id)} Received — Sri Sai Ramakrishna Paints & Hardware`,
+          html: emailHtml,
+        })
 
-      if (emailError) console.error('Resend email error:', emailError)
+        if (emailError) console.error('Resend email error:', emailError)
+      }
     } catch (emailErr) {
       console.error('Resend email error:', emailErr)
     }
