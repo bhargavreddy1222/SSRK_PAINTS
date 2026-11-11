@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { SHOP, BRANDS } from '@/lib/shop'
+import { BRAND_NAMES } from '@/lib/brands'
+import { SHOP } from '@/lib/shop'
 import { ChatIcon, ClockIcon, InstagramIcon, MapPinIcon, PhoneIcon } from '@/components/Icons'
 
 export default function Footer() {
@@ -13,14 +14,14 @@ export default function Footer() {
             <div className="text-lg font-extrabold text-white">
               Sri Sai <span className="text-orange-500">Ramakrishna</span>
             </div>
-            <div className="text-xs text-stone-500 font-semibold uppercase tracking-widest mb-4">
+            <div className="text-xs text-stone-400 font-semibold uppercase tracking-widest mb-4">
               {SHOP.tagline} · Guntur, AP
             </div>
             <p className="text-sm leading-relaxed max-w-sm mb-5">
               Your trusted local paint and hardware shop. Genuine products at fair prices.
             </p>
             <div className="flex flex-wrap gap-1.5">
-              {BRANDS.map(b => (
+              {BRAND_NAMES.map(b => (
                 <span key={b} className="bg-white/5 border border-white/10 text-stone-300 px-2.5 py-1 rounded-full text-[0.68rem] font-semibold">{b}</span>
               ))}
             </div>
@@ -28,7 +29,7 @@ export default function Footer() {
 
           {/* Quick links */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-widest text-stone-500 mb-4">Quick Links</h4>
+            <h2 className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-4">Quick Links</h2>
             <ul className="space-y-2.5 list-none p-0 m-0">
               {[['/', 'Home'], ['/products', 'Products'], ['/order', 'My Order'], ['/#contact', 'Contact']].map(([href, label]) => (
                 <li key={href}>
@@ -42,7 +43,7 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-widest text-stone-500 mb-4">Contact</h4>
+            <h2 className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-4">Contact</h2>
             <ul className="space-y-3 list-none p-0 m-0 text-sm">
               <li>
                 <a href={SHOP.phoneHref} className="flex items-center gap-2 hover:text-orange-400 transition-colors no-underline">
@@ -54,11 +55,13 @@ export default function Footer() {
                   <ChatIcon className="w-4 h-4 text-orange-500 shrink-0" /> WhatsApp Us
                 </a>
               </li>
-              <li>
-                <a href={SHOP.instagramHref} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-orange-400 transition-colors no-underline">
-                  <InstagramIcon className="w-4 h-4 text-orange-500 shrink-0" /> {SHOP.instagramHandle}
-                </a>
-              </li>
+              {SHOP.instagramHref && (
+                <li>
+                  <a href={SHOP.instagramHref} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-orange-400 transition-colors no-underline">
+                    <InstagramIcon className="w-4 h-4 text-orange-500 shrink-0" /> {SHOP.instagramHandle}
+                  </a>
+                </li>
+              )}
               <li className="flex items-start gap-2 leading-relaxed">
                 <MapPinIcon className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
                 <span>{SHOP.addressLine},<br />{SHOP.city}</span>
@@ -71,7 +74,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="flex flex-wrap justify-between items-center gap-3 text-xs text-stone-500">
+        <div className="flex flex-wrap justify-between items-center gap-3 text-xs text-stone-400">
           <span>© {new Date().getFullYear()} Sri Sai Ramakrishna Paints &amp; Hardware. All rights reserved.</span>
           <span>Guntur, Andhra Pradesh</span>
         </div>

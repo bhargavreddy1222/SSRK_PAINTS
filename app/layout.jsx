@@ -4,7 +4,7 @@ import { SHOP } from '@/lib/shop'
 
 const poppins = Poppins({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
+  weight: ['400', '600', '700', '800'],
 })
 
 const TITLE = 'Sri Sai Ramakrishna Paints & Hardware — Guntur'

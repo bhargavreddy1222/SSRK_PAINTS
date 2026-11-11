@@ -1,84 +1,10 @@
-// ─────────────────────────────────────────────────────────
-//  Product type — determines what options the user selects
-//  'tintable' → choose a Base  (emulsions, exterior paints)
-//  'readymix' → choose a Color (enamels, lacquers, distemper)
-//  'clear'    → no color choice (putty, primer, hardware)
-// ─────────────────────────────────────────────────────────
-export const PRODUCT_TYPE = {
-  TINTABLE: 'tintable',
-  READYMIX: 'readymix',
-  CLEAR:    'clear',
-}
-
-export const brands = [
-  'All',
-  'Asian Paints',
-  'Berger Paints',
-  'Sheenlac',
-  'Saincoat',
-  'JK Wall Care',
-  'Birla Wall Care',
-]
-
-export const categories = [
-  'All',
-  'Interior',
-  'Exterior',
-  'Wood Finish',
-  'Enamel',
-  'Wall Putty',
-  'Primer',
-  'Hardware',
-]
-
-// ── Enamel ready-mix colors ───────────────────────────────
-const ENAMEL_COLORS = [
-  { id: 'wh', name: 'White',         hex: '#F5F5F5' },
-  { id: 'iv', name: 'Ivory',         hex: '#FFFFF0' },
-  { id: 'cr', name: 'Cream',         hex: '#FFFDD0' },
-  { id: 'gy', name: 'Golden Yellow', hex: '#FFC200' },
-  { id: 'br', name: 'Brown',         hex: '#7B3F00' },
-  { id: 'bg', name: 'Bus Green',     hex: '#1A5C35' },
-  { id: 'sr', name: 'Signal Red',    hex: '#C8102E' },
-  { id: 'bk', name: 'Black',         hex: '#1C1C1C' },
-  { id: 'sb', name: 'Sky Blue',      hex: '#5B9BD5' },
-  { id: 'al', name: 'Aluminium',     hex: '#A9A9A9' },
-]
-
-// ── NC Lacquer colors ─────────────────────────────────────
-const NC_LACQUER_COLORS = [
-  { id: 'cl', name: 'Clear',     hex: '#F5E6C8' },
-  { id: 'wt', name: 'Walnut',    hex: '#4E2C0E' },
-  { id: 'tk', name: 'Teak',      hex: '#8B5E3C' },
-  { id: 'mh', name: 'Mahogany',  hex: '#6B2737' },
-  { id: 'ow', name: 'Off White', hex: '#FAF7F0' },
-]
-
-// ── PU Wood Finish colors ─────────────────────────────────
-const PU_COLORS = [
-  { id: 'cg', name: 'Clear Gloss', hex: '#F5E6C8' },
-  { id: 'cm', name: 'Clear Matte', hex: '#EDE0C8' },
-  { id: 'wt', name: 'Walnut',      hex: '#4E2C0E' },
-  { id: 'tk', name: 'Teak',        hex: '#8B5E3C' },
-]
-
-// ── Distemper colors ──────────────────────────────────────
-const DISTEMPER_COLORS = [
-  { id: 'wh', name: 'White',    hex: '#F8F8F8' },
-  { id: 'cr', name: 'Cream',    hex: '#FFFDD0' },
-  { id: 'sb', name: 'Sky Blue', hex: '#87CEEB' },
-  { id: 'pk', name: 'Pink',     hex: '#FFB6C1' },
-  { id: 'bf', name: 'Buff',     hex: '#F0DC82' },
-]
-
-
-// Colour sets the admin product editor offers as presets
-export const COLOR_PRESETS = {
-  'Enamel colours':     ENAMEL_COLORS,
-  'NC Lacquer colours': NC_LACQUER_COLORS,
-  'PU Wood colours':    PU_COLORS,
-  'Distemper colours':  DISTEMPER_COLORS,
-}
+// ⚠️ Development fallback only — not the live catalogue.
+// The shop reads the Supabase `products` table (lib/catalog.js), edited from
+// /admin/products. This list is shown only on a development machine whose
+// database can't be reached; it is never sent to browsers or used in production.
+import {
+  PRODUCT_TYPE, ENAMEL_COLORS, NC_LACQUER_COLORS, PU_COLORS, DISTEMPER_COLORS,
+} from '../lib/products.js'
 
 // ─────────────────────────────────────────────────────────
 //  STRUCTURE EXPLAINED
@@ -98,9 +24,6 @@ export const COLOR_PRESETS = {
 //    packs: [{ size, price }]    ← just pick a size
 // ─────────────────────────────────────────────────────────
 
-// Seed / fallback catalogue. The live catalogue is the Supabase
-// `products` table (see lib/catalog.js and supabase/setup.sql) —
-// this list is only used if that table isn't reachable.
 export const catalogue = [
 
   // ╔══════════════════════════════════════════════════════╗
@@ -764,74 +687,3 @@ export const catalogue = [
     ],
   },
 ]
-
-
-// ── Helpers ───────────────────────────────────────────────
-
-export const filterProducts = (list, brand, category, search = '') =>
-  list.filter(p => {
-    const matchBrand    = brand    === 'All' || p.brand    === brand
-    const matchCategory = category === 'All' || p.category === category
-    const query         = search.trim().toLowerCase()
-    const matchSearch   = !query ||
-      [p.name, p.brand, p.category, p.description]
-        .some(field => field?.toLowerCase().includes(query))
-    return matchBrand && matchCategory && matchSearch
-  })
-
-// Returns all available pack sizes for a product (used for display)
-export const getAvailablePacks = (product, baseId = null) => {
-  if (product.type === PRODUCT_TYPE.TINTABLE) {
-    const base = baseId
-      ? product.bases.find(b => b.id === baseId)
-      : product.bases[0]
-    return base?.packs ?? []
-  }
-  return product.packs ?? []
-}
-
-// Returns price for a specific base + size combination
-export const getPrice = (product, baseId, size) => {
-  if (product.type === PRODUCT_TYPE.TINTABLE) {
-    const base = product.bases.find(b => b.id === baseId)
-    const pack = base?.packs.find(p => p.size === size)
-    return pack?.price ?? null
-  }
-  return product.packs?.find(p => p.size === size)?.price ?? null
-}
-
-// Products still being filled in (no bases/packs yet) are hidden
-// from the shop until they have at least one pack to order.
-export function hasPacks(product) {
-  return product.type === PRODUCT_TYPE.TINTABLE
-    ? product.bases?.some(base => base.packs?.length)
-    : product.packs?.length > 0
-}
-
-export const products = catalogue.filter(hasPacks)
-
-// Looks up the real product + pack for an order line in `list`.
-// `option` is the base name (tintable) or colour name (readymix).
-// Returns null if any part doesn't exist — used by the order API
-// so prices always come from the catalogue, never from the browser.
-export function resolveOrderLine(list, productId, size, option) {
-  const product = list.find(p => p.id === productId)
-  if (!product) return null
-
-  let packs = product.packs
-  let optionName = null
-  if (product.type === PRODUCT_TYPE.TINTABLE) {
-    const base = product.bases.find(b => b.name === option)
-    if (!base) return null
-    packs = base.packs
-    optionName = base.name
-  } else if (product.type === PRODUCT_TYPE.READYMIX) {
-    const color = product.colors.find(c => c.name === option)
-    if (!color) return null
-    optionName = color.name
-  }
-
-  const pack = packs?.find(p => p.size === size)
-  if (!pack) return null
-  return { product, pack, option: optionName }
-}

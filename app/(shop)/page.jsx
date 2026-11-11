@@ -1,19 +1,11 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { BRAND_INFO } from '@/lib/brands'
 import { SHOP } from '@/lib/shop'
 import {
   ArrowRightIcon, BrushIcon, ChatIcon, ClockIcon, DropletIcon, HomeIcon, InstagramIcon, LayersIcon,
   MapPinIcon, PaletteIcon, PhoneIcon, ShieldIcon, TruckIcon, WallIcon, WrenchIcon,
 } from '@/components/Icons'
-
-const BRANDS = [
-  { id: 'AP', name: 'Asian Paints',    bg: 'bg-orange-50', text: 'text-orange-600', badge: 'Top Brand', desc: "India's #1 paint brand. Full range of interior, exterior, and texture products." },
-  { id: 'BP', name: 'Berger Paints',   bg: 'bg-blue-50',   text: 'text-blue-700',   badge: 'Top Brand', desc: 'Silk, Weathercoat, Easy Clean — reliable paints for every surface.' },
-  { id: 'SL', name: 'Sheenlac',        bg: 'bg-rose-50',   text: 'text-rose-700',   badge: null, desc: 'NC lacquers and PU finishes for wood, furniture, and doors.' },
-  { id: 'SC', name: 'Saincoat',        bg: 'bg-sky-50',    text: 'text-sky-700',    badge: null, desc: 'Interior and exterior emulsions at reasonable prices.' },
-  { id: 'JK', name: 'JK Wall Care',    bg: 'bg-green-50',  text: 'text-green-700',  badge: null, desc: 'JK Cement wall care putty for a smooth, strong base coat.' },
-  { id: 'BW', name: 'Birla Wall Care', bg: 'bg-yellow-50', text: 'text-yellow-700', badge: null, desc: 'Birla White wall care putty — high whiteness, smooth finish.' },
-]
 
 // `category` links into the catalogue with that filter applied
 const PRODUCTS = [
@@ -45,6 +37,7 @@ const LOCAL_BUSINESS = {
   '@type': 'HardwareStore',
   name: `${SHOP.name} ${SHOP.tagline}`,
   url: SHOP.url,
+  image: `${SHOP.url}/opengraph-image`,
   telephone: SHOP.phoneE164,
   hasMap: SHOP.mapsHref,
   address: {
@@ -61,6 +54,10 @@ const LOCAL_BUSINESS = {
     opens,
     closes,
   })),
+}
+
+export const metadata = {
+  alternates: { canonical: '/' },
 }
 
 function SectionHeading({ eyebrow, title, children }) {
@@ -106,14 +103,14 @@ export default function HomePage() {
               <a href={SHOP.phoneHref} className="flex items-center gap-2 bg-white hover:bg-stone-50 border border-stone-300 text-stone-900 px-6 py-3.5 rounded-xl font-bold text-sm transition-colors no-underline">
                 <PhoneIcon className="w-4 h-4 text-orange-700" /> Call Us
               </a>
-              <a href={SHOP.whatsappHref} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-[#25D366] hover:bg-[#1DA851] text-white px-6 py-3.5 rounded-xl font-bold text-sm transition-colors no-underline">
+              <a href={SHOP.whatsappHref} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white px-6 py-3.5 rounded-xl font-bold text-sm transition-colors no-underline">
                 <ChatIcon className="w-4 h-4" /> WhatsApp
               </a>
             </div>
 
-            <div className="flex flex-wrap gap-x-6 gap-y-2 mt-8 text-sm text-stone-500">
+            <div className="flex flex-wrap gap-x-6 gap-y-2 mt-8 text-sm text-stone-600">
               <span className="flex items-center gap-1.5"><ClockIcon className="w-4 h-4 text-orange-600" /> Open all week</span>
-              <span className="flex items-center gap-1.5"><ShieldIcon className="w-4 h-4 text-orange-600" /> 6 trusted brands</span>
+              <span className="flex items-center gap-1.5"><ShieldIcon className="w-4 h-4 text-orange-600" /> {BRAND_INFO.length} trusted brands</span>
             </div>
           </div>
 
@@ -126,7 +123,8 @@ export default function HomePage() {
                   key={img.src}
                   className={`relative aspect-square bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden ${i % 2 ? 'translate-y-6' : ''}`}
                 >
-                  <Image src={img.src} alt={img.alt} fill priority={i < 2} sizes="(min-width: 1024px) 22vw, 45vw" className="object-contain p-4" />
+                  {/* Not preloaded: this collage is hidden on phones, which would download it for nothing */}
+                  <Image src={img.src} alt={img.alt} fill sizes="(min-width: 1024px) 22vw, 45vw" className="object-contain p-4" />
                 </div>
               ))}
             </div>
@@ -188,14 +186,14 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <SectionHeading eyebrow="Brands We Stock" title="Products from brands you can trust" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {BRANDS.map(b => (
+            {BRAND_INFO.map(b => (
               <Link
-                key={b.id}
+                key={b.name}
                 href={`/products?brand=${encodeURIComponent(b.name)}`}
                 className="group flex items-start gap-4 bg-stone-50 hover:bg-white rounded-2xl p-5 border border-transparent hover:border-stone-200 hover:shadow-md transition-all duration-200 no-underline text-stone-900"
               >
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-extrabold text-sm shrink-0 ${b.bg} ${b.text}`}>
-                  {b.id}
+                  {b.initials}
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1">
@@ -237,15 +235,17 @@ export default function HomePage() {
             </dl>
 
             <div className="flex flex-wrap gap-3 mt-auto">
-              <a href={SHOP.phoneHref} className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white px-5 py-3 rounded-xl font-bold text-sm transition-colors no-underline">
+              <a href={SHOP.phoneHref} className="flex items-center gap-2 bg-orange-700 hover:bg-orange-800 text-white px-5 py-3 rounded-xl font-bold text-sm transition-colors no-underline">
                 <PhoneIcon className="w-4 h-4" /> Call Now
               </a>
-              <a href={SHOP.whatsappHref} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-[#25D366] hover:bg-[#1DA851] text-white px-5 py-3 rounded-xl font-bold text-sm transition-colors no-underline">
+              <a href={SHOP.whatsappHref} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white px-5 py-3 rounded-xl font-bold text-sm transition-colors no-underline">
                 <ChatIcon className="w-4 h-4" /> WhatsApp
               </a>
-              <a href={SHOP.instagramHref} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-gradient-to-tr from-amber-500 via-pink-600 to-purple-600 hover:opacity-90 text-white px-5 py-3 rounded-xl font-bold text-sm transition-opacity no-underline">
-                <InstagramIcon className="w-4 h-4" /> Instagram
-              </a>
+              {SHOP.instagramHref && (
+                <a href={SHOP.instagramHref} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-gradient-to-tr from-amber-600 via-pink-700 to-purple-700 hover:opacity-90 text-white px-5 py-3 rounded-xl font-bold text-sm transition-opacity no-underline">
+                  <InstagramIcon className="w-4 h-4" /> Instagram
+                </a>
+              )}
             </div>
           </div>
 
@@ -275,7 +275,7 @@ function ContactRow({ Icon, label, children }) {
         <Icon className="w-5 h-5" />
       </span>
       <div>
-        <dt className="text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider mb-0.5">{label}</dt>
+        <dt className="text-[0.7rem] font-bold text-stone-400 uppercase tracking-wider mb-0.5">{label}</dt>
         <dd className="text-stone-100 m-0">{children}</dd>
       </div>
     </div>

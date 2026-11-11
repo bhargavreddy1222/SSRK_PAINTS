@@ -48,7 +48,7 @@ export default function AdminHeader({ actions }) {
         <Link href="/" target="_blank" className="hidden sm:block px-3 py-2 rounded-lg text-sm font-semibold text-stone-600 hover:bg-stone-100 no-underline">
           View shop
         </Link>
-        <button onClick={logout} className="px-3.5 py-2 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 text-sm font-semibold cursor-pointer">
+        <button type="button" onClick={logout} title="Logs out every device" className="px-3.5 py-2 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 text-sm font-semibold cursor-pointer">
           Log out
         </button>
       </div>

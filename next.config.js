@@ -3,6 +3,11 @@ const supabaseHost = process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL
 
 const isProd = process.env.NODE_ENV === 'production'
 
+// lib/shop.js falls back to localhost, which would end up in the sitemap and share previews
+if (isProd && !process.env.NEXT_PUBLIC_SITE_URL && !process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+  console.warn('⚠ NEXT_PUBLIC_SITE_URL is not set: sitemap.xml, robots.txt and share previews will point at http://localhost:3000.')
+}
+
 // Inline scripts have to stay allowed: static pages can't use per-request nonces.
 // Off in development because hot reload needs eval and websockets.
 const CSP = [
@@ -26,7 +31,7 @@ const SECURITY_HEADERS = [
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
   ...(isProd ? [
     { key: 'Content-Security-Policy', value: CSP },
-    { key: 'Strict-Transport-Security', value: 'max-age=31536000' },
+    { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
   ] : []),
 ]
 
