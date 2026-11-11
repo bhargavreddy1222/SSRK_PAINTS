@@ -1,9 +1,8 @@
 import { randomUUID } from 'node:crypto'
 import { supabaseAdmin, describeSupabaseError } from '@/lib/supabaseAdmin'
 import { isAdmin } from '@/lib/adminAuth'
+import { IMAGE_BUCKET } from '@/lib/productImages'
 
-// Product photos go to the public `product-images` storage bucket
-const BUCKET    = 'product-images'
 const MAX_BYTES = 4 * 1024 * 1024
 const TYPES     = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }
 
@@ -37,7 +36,7 @@ export async function POST(request) {
 
   const path = `products/${randomUUID()}.${ext}`
   const { error } = await supabaseAdmin.storage
-    .from(BUCKET)
+    .from(IMAGE_BUCKET)
     .upload(path, bytes, { contentType: file.type })
 
   if (error) {
@@ -46,6 +45,6 @@ export async function POST(request) {
     return Response.json({ error: reason }, { status: 500 })
   }
 
-  const { data } = supabaseAdmin.storage.from(BUCKET).getPublicUrl(path)
+  const { data } = supabaseAdmin.storage.from(IMAGE_BUCKET).getPublicUrl(path)
   return Response.json({ url: data.publicUrl })
 }

@@ -1,6 +1,7 @@
 'use client'
 
-import { useMemo, useState, useTransition } from 'react'
+import { useEffect, useMemo, useState, useTransition } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ORDER_STATUSES, orderRef } from '@/lib/orderStatus'
 import { ChatIcon, PhoneIcon, SearchIcon } from '@/components/Icons'
@@ -10,12 +11,14 @@ const STATUS_BY_ID = Object.fromEntries(ORDER_STATUSES.map(s => [s.id, s]))
 // The main button on each order moves it one step along this path
 const NEXT_STEP = { new: 'confirmed', confirmed: 'ready', ready: 'completed' }
 const OPEN_STATUSES = ['new', 'confirmed', 'ready']
+// New orders reach the shop only through this page, so it re-checks by itself
+const AUTO_REFRESH_MS = 60 * 1000
 
 const rupees = n => `₹${Number(n ?? 0).toLocaleString('en-IN')}`
 const istDate = new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium' })
 const istDateTime = new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })
 
-export default function OrdersBoard({ orders, loadError, statusMissing, limit }) {
+export default function OrdersBoard({ orders, loadError, statusMissing, limit, olderHref }) {
   const router = useRouter()
   const [refreshing, startRefresh] = useTransition()
   const [tab,    setTab]    = useState('open')
@@ -38,6 +41,26 @@ export default function OrdersBoard({ orders, loadError, statusMissing, limit })
     }
     return c
   }, [list])
+
+  // Re-check for new orders every minute while this tab is on screen,
+  // and straight away when the owner comes back to it
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState === 'visible') startRefresh(() => router.refresh())
+    }
+    const timer = setInterval(refresh, AUTO_REFRESH_MS)
+    document.addEventListener('visibilitychange', refresh)
+    return () => {
+      clearInterval(timer)
+      document.removeEventListener('visibilitychange', refresh)
+    }
+  }, [router])
+
+  // Show the number of new orders in the browser tab, so it's visible from another tab
+  const newCount = counts.new ?? 0
+  useEffect(() => {
+    document.title = `${newCount ? `(${newCount}) ` : ''}Orders — Sri Sai Ramakrishna Admin`
+  }, [newCount])
 
   const today = istDate.format(new Date())
   const todayCount = list.filter(o => istDate.format(new Date(o.placed_at)) === today).length
@@ -109,7 +132,8 @@ export default function OrdersBoard({ orders, loadError, statusMissing, limit })
             <pre className="mt-2 bg-white/70 rounded-lg p-3 text-xs overflow-x-auto">alter table orders add column status text not null default &apos;new&apos;;</pre>
           </Banner>
         )}
-        {saveErr && <Banner tone="red">{saveErr}</Banner>}
+        <div role="alert">{saveErr && <Banner tone="red">{saveErr}</Banner>}</div>
+        <p className="text-xs text-stone-600 mb-3">New orders appear here by themselves — this page checks every minute while it&apos;s open.</p>
 
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
@@ -125,25 +149,27 @@ export default function OrdersBoard({ orders, loadError, statusMissing, limit })
             {tabs.map(t => (
               <button
                 key={t.id}
+                type="button"
+                aria-pressed={tab === t.id}
                 onClick={() => setTab(t.id)}
-                className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-sm font-semibold border transition-colors cursor-pointer ${
+                className={`whitespace-nowrap px-3.5 py-1.5 coarse:min-h-11 rounded-full text-sm font-semibold border transition-colors cursor-pointer ${
                   tab === t.id ? 'bg-stone-900 text-white border-stone-900' : 'bg-white text-stone-600 border-stone-200 hover:border-stone-400'
                 }`}
               >
                 {t.label}
-                <span className={`ml-1.5 text-xs ${tab === t.id ? 'text-stone-300' : 'text-stone-400'}`}>{counts[t.id] ?? 0}</span>
+                <span className={`ml-1.5 text-xs ${tab === t.id ? 'text-stone-300' : 'text-stone-500'}`}>{counts[t.id] ?? 0}</span>
               </button>
             ))}
           </div>
           <div className="relative md:ml-auto md:w-72">
-            <SearchIcon className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <SearchIcon className="w-4 h-4 text-stone-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="search"
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Name, phone, email or order #"
               aria-label="Search orders"
-              className="w-full pl-9 pr-3 py-2 border border-stone-200 rounded-xl text-sm bg-white outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+              className="w-full pl-9 pr-3 py-2 border border-stone-200 rounded-xl text-base sm:text-sm placeholder:text-stone-500 bg-white outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
             />
           </div>
         </div>
@@ -167,7 +193,10 @@ export default function OrdersBoard({ orders, loadError, statusMissing, limit })
         )}
 
         {orders.length >= limit && (
-          <p className="text-xs text-stone-400 text-center mt-6">Showing the latest {limit} orders.</p>
+          <p className="text-sm text-stone-600 text-center mt-6">
+            Showing the latest {limit} orders.{' '}
+            {olderHref && <Link href={olderHref} className="font-bold text-orange-700 hover:text-orange-800">Show older orders</Link>}
+          </p>
         )}
       </div>
     </div>
@@ -188,17 +217,17 @@ function OrderCard({ order, saving, onStatus }) {
       <div className="p-5 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-bold text-stone-400">#{orderRef(order.id)}</span>
+            <span className="text-xs font-bold text-stone-500">#{orderRef(order.id)}</span>
             <span className={`text-[0.65rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${status.badge}`}>
               {status.label}
             </span>
           </div>
           <h3 className="font-bold text-base truncate">{order.customer_name}</h3>
-          <p className="text-xs text-stone-400">{istDateTime.format(new Date(order.placed_at))}</p>
+          <p className="text-xs text-stone-500">{istDateTime.format(new Date(order.placed_at))}</p>
         </div>
         <div className="text-right shrink-0">
           <p className="font-extrabold text-lg tabular-nums">{rupees(order.estimated_total)}</p>
-          <p className="text-xs text-stone-400">{order.total_items} item{order.total_items !== 1 ? 's' : ''}</p>
+          <p className="text-xs text-stone-500">{order.total_items} item{order.total_items !== 1 ? 's' : ''}</p>
         </div>
       </div>
 
@@ -211,7 +240,7 @@ function OrderCard({ order, saving, onStatus }) {
           <ChatIcon className="w-3.5 h-3.5" /> WhatsApp
         </a>
         {order.email && (
-          <a href={`mailto:${order.email}`} className="px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 font-medium text-stone-600 no-underline truncate max-w-full">
+          <a href={`mailto:${order.email}`} className="px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 font-semibold text-stone-600 no-underline truncate max-w-full">
             {order.email}
           </a>
         )}
@@ -224,7 +253,7 @@ function OrderCard({ order, saving, onStatus }) {
             <span className="w-8 text-center font-bold text-stone-500 tabular-nums shrink-0">{item.qty}×</span>
             <div className="flex-1 min-w-0">
               <p className="font-semibold truncate">{item.product}</p>
-              <p className="text-xs text-stone-400 truncate">
+              <p className="text-xs text-stone-500 truncate">
                 {item.brand} · {item.pack}{item.option ? ` · ${item.option}` : ''} · {rupees(item.price)} each
               </p>
             </div>
@@ -255,7 +284,7 @@ function OrderCard({ order, saving, onStatus }) {
           onChange={e => onStatus(e.target.value)}
           disabled={saving}
           aria-label="Change status"
-          className={`${next ? '' : 'flex-1'} px-3 py-2.5 border border-stone-200 rounded-xl text-sm font-semibold bg-white cursor-pointer outline-none focus:border-orange-500`}
+          className={`${next ? '' : 'flex-1'} px-3 py-2.5 border border-stone-200 rounded-xl text-base sm:text-sm font-semibold bg-white cursor-pointer outline-none focus:border-orange-500`}
         >
           {ORDER_STATUSES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
         </select>

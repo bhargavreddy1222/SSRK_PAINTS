@@ -2,18 +2,18 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import CartBar from '@/components/CartBar'
 import { CartProvider } from '@/context/CartContext'
-import { getProducts } from '@/lib/catalog'
 
-// Re-check the catalogue at least hourly; admin edits refresh it immediately
-export const revalidate = 3600
-
-export default async function ShopLayout({ children }) {
-  const products = await getProducts()
-
+export default function ShopLayout({ children }) {
   return (
-    <CartProvider products={products}>
+    <CartProvider>
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[300] focus:bg-stone-900 focus:text-white focus:px-4 focus:py-3 focus:rounded-xl focus:font-bold focus:text-sm"
+      >
+        Skip to content
+      </a>
       <Navbar />
-      <main>{children}</main>
+      <main id="main" tabIndex={-1} className="outline-none">{children}</main>
       <Footer />
       <CartBar />
     </CartProvider>

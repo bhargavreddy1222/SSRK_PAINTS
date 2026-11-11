@@ -4,10 +4,14 @@ module.exports = {
     './app/**/*.{js,jsx,tsx,ts}',
     './components/**/*.{js,jsx,tsx,ts}',
     './context/**/*.{js,jsx,tsx,ts}',
-    './data/**/*.{js,jsx,tsx,ts}',
+    './lib/**/*.{js,jsx,tsx,ts}',
   ],
   theme: {
     extend: {
+      screens: {
+        // Touch screens: `coarse:min-h-11` makes a control at least 44px tall there only
+        coarse: { raw: '(pointer: coarse)' },
+      },
       colors: {
         stone: {
           50: '#fafaf8',

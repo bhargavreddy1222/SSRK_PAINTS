@@ -1,11 +1,33 @@
 -- ─────────────────────────────────────────────────────────
---  One-time setup for the admin panel.
+--  Database setup for the shop and its admin panel.
 --  Paste this whole file into Supabase → SQL Editor → Run.
---  Safe to re-run: it won't duplicate or overwrite products.
+--  Safe to re-run: it never deletes, duplicates or overwrites
+--  orders or products.
 -- ─────────────────────────────────────────────────────────
 
--- 1. Order status (used by /admin)
+-- 1. Orders (written by /api/orders, read by /admin)
+create table if not exists orders (
+  id              uuid primary key default gen_random_uuid(),
+  customer_name   text    not null,
+  phone           text    not null,
+  email           text    not null default '',  -- optional on the form; '' when skipped
+  notes           text,
+  items           jsonb   not null,  -- [{ product_id, product, brand, pack, option, price, qty, subtotal }]
+  total_items     integer not null,
+  estimated_total numeric not null,
+  placed_at       timestamptz default now()
+);
+
+-- Order status, used by /admin (new → confirmed → ready → completed / cancelled)
 alter table orders add column if not exists status text not null default 'new';
+
+-- Only the server (service-role key) may read/write orders.
+-- RLS on + no policies = the public anon key gets nothing.
+alter table orders enable row level security;
+
+-- Newest-first list in /admin, and the "same order sent twice" check in /api/orders
+create index if not exists orders_placed_at_idx on orders (placed_at desc);
+create index if not exists orders_phone_placed_at_idx on orders (phone, placed_at desc);
 
 -- 2. Products table (edited from /admin/products)
 create table if not exists products (
@@ -35,8 +57,10 @@ on conflict (id) do update set
   file_size_limit    = excluded.file_size_limit,
   allowed_mime_types = excluded.allowed_mime_types;
 
--- 4. Current catalogue from data/products.js
---    (products without prices yet start hidden)
+-- 4. Starting catalogue (products without prices yet start hidden).
+--    Products that already exist are left exactly as they are. A product from
+--    this list that you deleted in /admin comes back if you run the file again.
+--    Several prices below are placeholders (some are above MRP): correct them in /admin/products.
 insert into products (id, brand, name, category, type, image, description, bases, colors, packs, active) values
   (1, 'Asian Paints', 'Royale Luxury Emulsion', 'Interior', 'tintable', '/image/asian/royale-luxury.jpg', 'Premium smooth-finish interior emulsion with washability and rich colour depth.', '[{"id":"wb","name":"RB2","desc":"For white and light pastel shades","packs":[{"size":"1L","mrp":809,"price":620},{"size":"4L","mrp":3800,"price":2480},{"size":"10L","mrp":9000,"price":6000},{"size":"20L","mrp":18000,"price":11800}]}]'::jsonb, null, null, true),
   (2, 'Asian Paints', 'Royale Shyne', 'Interior', 'tintable', '/image/asian/interior-walls-royale-shyne.jpg', 'Premium interior emulsion with a soft sheen finish, rich colour and easy washability.', '[{"id":"wb","name":"AB2","desc":"For white and light pastel shades","packs":[{"size":"1L","mrp":800,"price":380},{"size":"4L","mrp":3000,"price":1500},{"size":"10L","mrp":7000,"price":3400},{"size":"20L","mrp":14000,"price":6500}]},{"id":"mb","name":"AB11","desc":"For medium and mid-tone shades","packs":[{"size":"1L","mrp":800,"price":380},{"size":"4L","mrp":3000,"price":1500},{"size":"10L","mrp":7000,"price":3400},{"size":"20L","mrp":14000,"price":6500}]},{"id":"db","name":"AB21G","desc":"For dark and deep shades","packs":[{"size":"1L","mrp":800,"price":380},{"size":"4L","mrp":3000,"price":1500},{"size":"10L","mrp":7000,"price":3400},{"size":"20L","mrp":14000,"price":6500}]}]'::jsonb, null, null, true),
@@ -72,3 +96,19 @@ on conflict (id) do nothing;
 
 -- Make new products continue numbering after the seeded ones
 select setval(pg_get_serial_sequence('products', 'id'), (select max(id) from products));
+
+-- 5. Admin sign-out. "Log out" in /admin records the time here, and every
+--    session cookie issued before it stops working — on all devices.
+create table if not exists admin_state (
+  id                  integer primary key check (id = 1),
+  sessions_valid_from timestamptz not null
+);
+alter table admin_state enable row level security;
+
+-- 6. Check (optional): both lists below should come back empty.
+--    Any row in the first is a rule letting the public read or write a table;
+--    any row in the second is a table without row level security.
+select tablename, policyname, cmd, roles from pg_policies
+  where schemaname = 'public' and tablename in ('orders', 'products', 'admin_state');
+select tablename from pg_tables
+  where schemaname = 'public' and tablename in ('orders', 'products', 'admin_state') and not rowsecurity;

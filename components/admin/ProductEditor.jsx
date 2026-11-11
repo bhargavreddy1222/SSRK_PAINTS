@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { PRODUCT_TYPE, COLOR_PRESETS, brands, categories } from '@/data/products'
+import { PRODUCT_TYPE, COLOR_PRESETS, brands, categories } from '@/lib/products'
 import { validateProduct } from '@/lib/productSchema'
 import { CloseIcon, PaletteIcon, PlusIcon, TrashIcon } from '@/components/Icons'
 import AdminHeader from '@/components/admin/AdminHeader'
@@ -113,7 +113,7 @@ export default function ProductEditor({ product, source, reason }) {
       <AdminHeader />
 
       <form onSubmit={handleSave} className="px-4 md:px-8 py-6 max-w-4xl mx-auto flex flex-col gap-5">
-        {readOnly && <SetupBanner reason={reason} />}
+        {readOnly && <SetupBanner source={source} reason={reason} />}
 
         <div className="flex items-center gap-3">
           <Link href="/admin/products" className="text-sm font-semibold text-stone-500 hover:text-stone-900 no-underline">← Products</Link>
@@ -173,13 +173,13 @@ export default function ProductEditor({ product, source, reason }) {
 
           {form.type === PRODUCT_TYPE.TINTABLE && (
             <div className="flex flex-col gap-4">
-              <p className="text-xs text-stone-500">Each base has its own pack sizes and prices.</p>
+              <p className="text-xs text-stone-600">Each base has its own pack sizes and prices. Customers see the base name as a button, so use words they know and keep the code in brackets: &ldquo;White Base (RB2)&rdquo;.</p>
               {form.bases.map((base, i) => (
                 <div key={base._k} className="border border-stone-200 rounded-xl p-4 bg-stone-50/60">
                   <div className="flex items-start gap-3 mb-3">
                     <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-3 flex-1">
                       <Field label={`Base ${i + 1} name`}>
-                        <input value={base.name} onChange={e => updateBase(base._k, { name: e.target.value })} className={inputCls} placeholder="e.g. White Base / RB2" />
+                        <input value={base.name} onChange={e => updateBase(base._k, { name: e.target.value })} className={inputCls} placeholder="e.g. White Base (RB2)" />
                       </Field>
                       <Field label="Short description">
                         <input value={base.desc} onChange={e => updateBase(base._k, { desc: e.target.value })} className={inputCls} placeholder="For white and light pastel shades" />
@@ -205,7 +205,7 @@ export default function ProductEditor({ product, source, reason }) {
                 <select
                   value=""
                   onChange={e => e.target.value && set('colors', COLOR_PRESETS[e.target.value].map(withKey))}
-                  className="px-3 py-1.5 border border-stone-200 rounded-lg text-xs bg-white"
+                  className="px-3 py-1.5 border border-stone-200 rounded-lg text-base sm:text-xs bg-white"
                   aria-label="Use a colour preset"
                 >
                   <option value="">Use a preset…</option>
@@ -247,7 +247,7 @@ export default function ProductEditor({ product, source, reason }) {
           <div className="max-w-4xl mx-auto flex items-center gap-3">
             {error
               ? <p className="text-sm text-red-700 flex-1">{error}</p>
-              : <p className="text-xs text-stone-400 flex-1 hidden sm:block">Changes appear in the shop as soon as you save.</p>}
+              : <p className="text-xs text-stone-500 flex-1 hidden sm:block">Changes appear in the shop as soon as you save.</p>}
             {!isNew && !readOnly && (
               <button
                 type="button"
@@ -282,23 +282,23 @@ function PacksEditor({ packs, onChange }) {
 
   return (
     <div>
-      <div className="grid grid-cols-[1fr_1fr_1fr_36px] gap-2 text-[0.65rem] font-bold text-stone-400 uppercase tracking-wider mb-1.5 px-0.5">
+      <div className="grid grid-cols-[1fr_1fr_1fr_36px] gap-2 text-[0.65rem] font-bold text-stone-500 uppercase tracking-wider mb-1.5 px-0.5">
         <span>Size</span><span>MRP ₹ (optional)</span><span>Our price ₹</span><span />
       </div>
       <div className="flex flex-col gap-2">
         {packs.map(pack => {
-          const mrpBelowPrice = pack.mrp !== '' && pack.price !== '' && Number(pack.mrp) < Number(pack.price)
+          const aboveMrp = pack.mrp !== '' && pack.price !== '' && Number(pack.mrp) < Number(pack.price)
           return (
             <div key={pack._k}>
               <div className="grid grid-cols-[1fr_1fr_1fr_36px] gap-2">
                 <input value={pack.size} onChange={e => update(pack._k, { size: e.target.value })} className={inputCls} placeholder="1L" aria-label="Pack size" />
                 <input type="number" min="0" inputMode="numeric" value={pack.mrp} onChange={e => update(pack._k, { mrp: e.target.value })} className={inputCls} placeholder="—" aria-label="MRP" />
-                <input type="number" min="0" inputMode="numeric" value={pack.price} onChange={e => update(pack._k, { price: e.target.value })} className={`${inputCls} ${mrpBelowPrice ? 'border-amber-400' : ''}`} placeholder="0" aria-label="Price" />
+                <input type="number" min="0" inputMode="numeric" value={pack.price} onChange={e => update(pack._k, { price: e.target.value })} aria-invalid={aboveMrp || undefined} className={`${inputCls} ${aboveMrp ? 'border-red-400' : ''}`} placeholder="0" aria-label="Price" />
                 <IconButton label="Remove pack" onClick={() => onChange(packs.filter(p => p._k !== pack._k))}>
                   <CloseIcon className="w-4 h-4" />
                 </IconButton>
               </div>
-              {mrpBelowPrice && <p className="text-xs text-amber-700 mt-1">Price is higher than MRP — is that right?</p>}
+              {aboveMrp && <p className="text-xs text-red-700 mt-1">Price can&apos;t be higher than the MRP. Lower the price or correct the MRP.</p>}
             </div>
           )
         })}
@@ -356,7 +356,7 @@ function ImagePicker({ value, onChange, disabled }) {
             </button>
           )}
         </div>
-        <p className="text-xs text-stone-400">JPG, PNG or WebP, up to 4 MB. A square photo on a white background looks best.</p>
+        <p className="text-xs text-stone-500">JPG, PNG or WebP, up to 4 MB. A square photo on a white background looks best.</p>
         {error && <p className="text-xs text-red-600">{error}</p>}
       </div>
     </div>
@@ -364,7 +364,7 @@ function ImagePicker({ value, onChange, disabled }) {
 }
 
 // ── Small building blocks ─────────────────────────────
-const inputCls = 'w-full px-3 py-2.5 border border-stone-200 rounded-xl text-sm bg-white outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100'
+const inputCls = 'w-full px-3 py-2.5 border border-stone-200 rounded-xl text-base sm:text-sm placeholder:text-stone-500 bg-white outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100'
 
 function Section({ title, children }) {
   return (
@@ -391,7 +391,7 @@ function IconButton({ label, onClick, children }) {
       onClick={onClick}
       aria-label={label}
       title={label}
-      className="w-9 h-10 flex items-center justify-center rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 bg-transparent border-0 cursor-pointer shrink-0"
+      className="w-9 h-10 flex items-center justify-center rounded-lg text-stone-500 hover:text-red-600 hover:bg-red-50 bg-transparent border-0 cursor-pointer shrink-0"
     >
       {children}
     </button>

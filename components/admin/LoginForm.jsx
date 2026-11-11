@@ -48,7 +48,7 @@ export default function LoginForm() {
             required
             value={password}
             onChange={e => setPassword(e.target.value)}
-            className="w-full pl-3.5 pr-16 py-3 border border-stone-200 rounded-xl text-sm bg-stone-50 outline-none transition focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+            className="w-full pl-3.5 pr-16 py-3 border border-stone-200 rounded-xl text-base sm:text-sm bg-stone-50 outline-none transition focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
           />
           <button
             type="button"

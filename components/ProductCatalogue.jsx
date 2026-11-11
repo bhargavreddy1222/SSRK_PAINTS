@@ -1,7 +1,7 @@
 'use client'
 
-import { useLayoutEffect, useState, useMemo } from 'react'
-import { brands, categories, filterProducts } from '@/data/products'
+import { useEffect, useLayoutEffect, useState, useMemo } from 'react'
+import { brands, categories, filterProducts } from '@/lib/products'
 import ProductCard from '@/components/ProductCard'
 import { CloseIcon, SearchIcon } from '@/components/Icons'
 
@@ -14,13 +14,36 @@ export default function ProductCatalogue({ products }) {
   // Home page links in with ?category=… or ?brand=…
   // Read after mount, not with useSearchParams: that hook leaves the static
   // /products HTML empty, so nothing shows until all the JavaScript has run.
+  // False until the address has been read, so the first render can't wipe it
+  const [urlRead, setUrlRead] = useState(false)
+
   useLayoutEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const fromParam = (key, list) => (list.includes(params.get(key)) ? params.get(key) : 'All')
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveBrand(fromParam('brand', brands))
     setActiveCategory(fromParam('category', categories))
+    setSearch((params.get('q') ?? '').slice(0, 80))
+    setUrlRead(true)
   }, [])
+
+  // Keep the filters in the address, so a filtered list can be shared, bookmarked
+  // or come back to with the Back button. Waits a moment while the customer is
+  // typing (browsers also limit how often the address may change).
+  useEffect(() => {
+    if (!urlRead) return
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams()
+      if (activeBrand !== 'All')    params.set('brand', activeBrand)
+      if (activeCategory !== 'All') params.set('category', activeCategory)
+      if (search.trim())            params.set('q', search.trim())
+      const query = params.toString()
+      const url = `${window.location.pathname}${query ? `?${query}` : ''}`
+      if (url === window.location.pathname + window.location.search) return
+      try { window.history.replaceState(window.history.state, '', url) } catch { /* rate-limited: the list still filters */ }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [urlRead, activeBrand, activeCategory, search])
 
   const filtered = useMemo(
     () => filterProducts(products, activeBrand, activeCategory, search),
@@ -46,7 +69,7 @@ export default function ProductCatalogue({ products }) {
         <div className="max-w-7xl mx-auto">
           <p className="text-orange-700 text-xs font-bold uppercase tracking-widest mb-2">Catalogue</p>
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">Our Products</h1>
-          <p className="text-stone-500 text-sm max-w-xl">
+          <p className="text-stone-600 text-sm max-w-xl">
             Pick a base or colour and pack size, add to your order, and we&apos;ll confirm price and stock by phone or WhatsApp.
           </p>
         </div>
@@ -59,14 +82,15 @@ export default function ProductCatalogue({ products }) {
         <div className="contents md:flex md:flex-col md:gap-3 md:max-w-7xl md:mx-auto">
           <div className="sticky top-16 z-30 bg-white/95 backdrop-blur px-[5%] py-2 border-b border-stone-200 md:static md:bg-transparent md:backdrop-blur-none md:p-0 md:border-0">
             <div className="relative md:max-w-md">
-              <SearchIcon className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <SearchIcon className="w-4 h-4 text-stone-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="search"
                 placeholder="Search products, brands, categories…"
                 value={search}
+                maxLength={80}
                 onChange={e => setSearch(e.target.value)}
                 aria-label="Search products"
-                className="w-full pl-10 pr-4 py-2.5 border border-stone-200 rounded-xl text-sm bg-stone-50 outline-none focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-100 transition"
+                className="w-full pl-10 pr-4 py-2.5 border border-stone-200 rounded-xl text-base sm:text-sm placeholder:text-stone-500 bg-stone-50 outline-none focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-100 transition"
               />
             </div>
           </div>
@@ -82,11 +106,11 @@ export default function ProductCatalogue({ products }) {
         <div className="max-w-7xl mx-auto">
           {/* Results count */}
           <div className="flex items-center justify-between mb-5">
-            <p className="text-sm text-stone-500">
+            <p role="status" className="text-sm text-stone-600">
               <span className="font-bold text-stone-900">{filtered.length}</span> product{filtered.length !== 1 ? 's' : ''}
             </p>
             {hasFilters && (
-              <button onClick={clearFilters} className="flex items-center gap-1 text-sm font-semibold text-orange-700 hover:text-orange-800 bg-transparent border-0 cursor-pointer">
+              <button type="button" onClick={clearFilters} className="flex items-center gap-1 coarse:min-h-11 text-sm font-semibold text-orange-700 hover:text-orange-800 bg-transparent border-0 cursor-pointer">
                 <CloseIcon className="w-3.5 h-3.5" /> Clear filters
               </button>
             )}
@@ -94,10 +118,10 @@ export default function ProductCatalogue({ products }) {
 
           {/* Product grid */}
           {filtered.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
               {filtered.map((product, i) => (
                 // The first row is on screen straight away, so don't lazy-load its photos
-                <ProductCard key={product.id} product={product} priority={i < 4} />
+                <ProductCard key={product.id} product={product} eager={i < 4} />
               ))}
             </div>
           ) : (
@@ -105,7 +129,7 @@ export default function ProductCatalogue({ products }) {
               <SearchIcon className="w-10 h-10 text-stone-300 mx-auto mb-3" />
               <p className="font-bold text-stone-700">No products found</p>
               <p className="text-sm text-stone-500 mt-1 mb-5">Try a different filter or search term.</p>
-              <button onClick={clearFilters} className="bg-stone-900 hover:bg-stone-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm border-0 cursor-pointer transition-colors">
+              <button type="button" onClick={clearFilters} className="bg-stone-900 hover:bg-stone-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm border-0 cursor-pointer transition-colors">
                 Show all products
               </button>
             </div>
@@ -119,15 +143,16 @@ export default function ProductCatalogue({ products }) {
 // One row of filter chips — scrolls sideways on small screens
 function FilterRow({ label, options, active, onChange }) {
   return (
-    <div className="flex items-center gap-3 min-w-0">
-      <span className="text-[0.65rem] font-bold text-stone-400 uppercase tracking-wider w-16 shrink-0">{label}</span>
+    <div role="group" aria-label={`Filter by ${label.toLowerCase()}`} className="flex items-center gap-3 min-w-0">
+      <span className="text-[0.65rem] font-bold text-stone-500 uppercase tracking-wider w-16 shrink-0" aria-hidden="true">{label}</span>
       <div className="flex gap-2 overflow-x-auto no-scrollbar -mr-[5vw] pr-[5vw] md:mr-0 md:pr-0 md:flex-wrap">
         {options.map(option => (
           <button
             key={option}
+            type="button"
             onClick={() => onChange(option)}
             aria-pressed={active === option}
-            className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-sm font-semibold border transition-colors cursor-pointer ${
+            className={`whitespace-nowrap px-3.5 py-1.5 coarse:min-h-11 rounded-full text-sm font-semibold border transition-colors cursor-pointer ${
               active === option
                 ? 'bg-orange-700 text-white border-orange-700'
                 : 'bg-white text-stone-600 border-stone-200 hover:border-stone-400'

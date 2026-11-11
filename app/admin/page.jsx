@@ -6,16 +6,22 @@ import OrdersBoard from '@/components/admin/OrdersBoard'
 
 export const dynamic = 'force-dynamic'
 
-const ORDER_LIMIT = 300
+// Orders are loaded newest first, this many at a time ("Show older orders" adds another page)
+const PAGE_SIZE = 300
+const MAX_PAGES = 20
 
-export default async function AdminPage() {
+export default async function AdminPage({ searchParams }) {
   if (!(await isAdmin())) redirect('/admin/login')
+
+  const requested = Number((await searchParams)?.pages)
+  const pages = Number.isInteger(requested) ? Math.min(Math.max(requested, 1), MAX_PAGES) : 1
+  const limit = pages * PAGE_SIZE
 
   const { data, error } = await supabaseAdmin
     .from('orders')
     .select('*')
     .order('placed_at', { ascending: false })
-    .limit(ORDER_LIMIT)
+    .limit(limit)
 
   const loadError = error ? describeSupabaseError(error) : null
   if (loadError) console.error('Admin orders fetch error:', loadError)
@@ -30,7 +36,8 @@ export default async function AdminPage() {
       orders={orders}
       loadError={loadError}
       statusMissing={statusMissing}
-      limit={ORDER_LIMIT}
+      limit={limit}
+      olderHref={pages < MAX_PAGES ? `/admin?pages=${pages + 1}` : null}
     />
   )
 }
