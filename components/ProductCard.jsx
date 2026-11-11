@@ -1,34 +1,46 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { useCart } from '@/context/CartContext'
 import { PRODUCT_TYPE } from '@/data/products'
-import Image from 'next/image';
- 
-'@/app/image'
+import { CheckIcon, PaletteIcon, PlusIcon } from '@/components/Icons'
 
 const BRAND_STYLE = {
-  'Asian Paints':    { bg: 'bg-orange-50',  text: 'text-orange-600', activeBorder: 'border-orange-400' },
-  'Berger Paints':   { bg: 'bg-blue-50',    text: 'text-blue-700',   activeBorder: 'border-blue-400'   },
-  'Sheenlac':        { bg: 'bg-orange-50',  text: 'text-orange-700', activeBorder: 'border-orange-400' },
-  'Saincoat':        { bg: 'bg-blue-50',    text: 'text-blue-600',   activeBorder: 'border-blue-400'   },
-  'JK Wall Care':    { bg: 'bg-green-50',   text: 'text-green-700',  activeBorder: 'border-green-400'  },
-  'Birla Wall Care': { bg: 'bg-yellow-50',  text: 'text-yellow-700', activeBorder: 'border-yellow-400' },
+  'Asian Paints':    { bg: 'bg-orange-50',  text: 'text-orange-700' },
+  'Berger Paints':   { bg: 'bg-blue-50',    text: 'text-blue-700'   },
+  'Sheenlac':        { bg: 'bg-rose-50',    text: 'text-rose-700'   },
+  'Saincoat':        { bg: 'bg-sky-50',     text: 'text-sky-700'    },
+  'JK Wall Care':    { bg: 'bg-green-50',   text: 'text-green-700'  },
+  'Birla Wall Care': { bg: 'bg-yellow-50',  text: 'text-yellow-700' },
 }
 
-export default function ProductCard({ product }) {
+// Light swatches need a border to stay visible on white
+const LIGHT_HEX = ['#F5F5F5', '#FFFFF0', '#FFFDD0', '#FAF7F0', '#F8F8F8', '#F5E6C8', '#EDE0C8']
+
+const rupees = n => `₹${n.toLocaleString('en-IN')}`
+
+export default function ProductCard({ product, priority = false }) {
   const { addToCart } = useCart()
-  const style = BRAND_STYLE[product.brand] ?? { bg: 'bg-stone-50', text: 'text-stone-600', activeBorder: 'border-stone-400' }
+  const style = BRAND_STYLE[product.brand] ?? { bg: 'bg-stone-100', text: 'text-stone-700' }
 
   // ── Initial state depending on product type ───────────
-  const initBase  = product.type === PRODUCT_TYPE.TINTABLE ? product.bases[0]        : null
-  const initPack  = product.type === PRODUCT_TYPE.TINTABLE ? product.bases[0].packs[0] : product.packs[0]
-  const initColor = product.type === PRODUCT_TYPE.READYMIX  ? product.colors[0]       : null
+  // (skip any base that has no packs filled in yet)
+  const initBase  = product.type === PRODUCT_TYPE.TINTABLE ? product.bases.find(b => b.packs?.length) : null
+  const initPack  = product.type === PRODUCT_TYPE.TINTABLE ? initBase.packs[0] : product.packs[0]
+  const initColor = product.type === PRODUCT_TYPE.READYMIX ? product.colors[0] : null
 
   const [selectedBase,  setSelectedBase]  = useState(initBase)
   const [selectedPack,  setSelectedPack]  = useState(initPack)
   const [selectedColor, setSelectedColor] = useState(initColor)
   const [added, setAdded] = useState(false)
+
+  // Reset the "Added" confirmation after a moment
+  useEffect(() => {
+    if (!added) return
+    const timer = setTimeout(() => setAdded(false), 1500)
+    return () => clearTimeout(timer)
+  }, [added])
 
   // ── When user picks a different base ─────────────────
   // Try to keep the same size — if that size exists in the
@@ -55,169 +67,168 @@ export default function ProductCard({ product }) {
     // pass the pack object directly — it already has the correct price
     addToCart(product, selectedPack, option)
     setAdded(true)
-    setTimeout(() => setAdded(false), 1500)
   }
 
+  const hasDiscount = selectedPack?.mrp > selectedPack?.price
+
   return (
-    <div className="bg-white border border-stone-200 rounded-xl p-5 flex flex-col gap-3 hover:shadow-md hover:border-stone-300 transition-all duration-200">
+    <article className="group bg-white border border-stone-200 rounded-2xl overflow-hidden flex flex-col hover:shadow-lg hover:border-stone-300 transition-all duration-200">
 
-      {/* Brand badge */}
-      <span className={`self-start text-[0.65rem] font-bold px-2 py-0.5 rounded-full ${style.bg} ${style.text}`}>
-        {product.brand}
-      </span>
-
-      {/* Name + category */}
-      <div>
-        <h3 className="font-bold text-base leading-snug mb-0.5">{product.name}</h3>
-        <span className="text-[0.72rem] text-stone-400 font-medium">{product.category}</span>
-      </div>
-      {/* Product image */}
-      <div className="w-full h-40 relative">
-        <Image
-          src={product.image}
-          alt={product.name}
-          fill
-          className="object-contain"
-        />
-      </div>
-
-      {/* Description */}
-      <p className="text-sm text-stone-500 leading-relaxed flex-1">{product.description}</p>
-
-      {/* ── TINTABLE: Base selector ───────────────────── */}
-      {product.type === PRODUCT_TYPE.TINTABLE && (
-        <div>
-          <p className="text-[0.65rem] font-bold text-stone-400 uppercase tracking-wider mb-1.5">
-            Base
-          </p>
-          <div className="flex flex-col gap-1.5">
-            {product.bases.map(base => (
-              <button
-                key={base.id}
-                onClick={() => handleBaseChange(base)}
-                className={`text-left px-3 py-2 rounded-lg border text-xs transition-all cursor-pointer ${
-                  selectedBase?.id === base.id
-                    ? `${style.bg} ${style.text} border-current font-semibold`
-                    : 'bg-white text-stone-600 border-stone-200 hover:border-stone-300 font-medium'
-                }`}
-              >
-                <span className="font-semibold">{base.name}</span>
-                <span className="text-stone-400 font-normal ml-1 text-[0.65rem]">
-                  — {base.desc}
-                </span>
-              </button>
-            ))}
+      {/* ── Image ─────────────────────────────────────── */}
+      <div className="relative aspect-[4/3] bg-gradient-to-b from-stone-50 to-stone-100 border-b border-stone-100">
+        {product.image ? (
+          <Image
+            src={product.image}
+            alt={product.name}
+            fill
+            priority={priority}
+            sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            className="object-contain p-5 group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <div className={`absolute inset-0 flex items-center justify-center ${style.text} opacity-40`}>
+            <PaletteIcon className="w-14 h-14" />
           </div>
-        </div>
-      )}
+        )}
+        <span className={`absolute top-3 left-3 text-[0.65rem] font-bold px-2 py-0.5 rounded-full ${style.bg} ${style.text}`}>
+          {product.brand}
+        </span>
+        {hasDiscount && (
+          <span className="absolute top-3 right-3 text-[0.65rem] font-bold px-2 py-0.5 rounded-full bg-green-600 text-white">
+            {Math.round(((selectedPack.mrp - selectedPack.price) / selectedPack.mrp) * 100)}% off
+          </span>
+        )}
+      </div>
 
-      {/* ── READYMIX: Color selector ──────────────────── */}
-      {product.type === PRODUCT_TYPE.READYMIX && (
+      <div className="p-5 flex flex-col gap-4 flex-1">
+
+        {/* Name + category + description */}
         <div>
-          <p className="text-[0.65rem] font-bold text-stone-400 uppercase tracking-wider mb-1.5">
-            Colour
-            {selectedColor && (
-              <span className={`ml-2 normal-case font-semibold ${style.text}`}>
-                {selectedColor.name}
-              </span>
+          <p className="text-[0.68rem] text-stone-400 font-semibold uppercase tracking-wider mb-1">{product.category}</p>
+          <h3 className="font-bold text-base leading-snug">{product.name}</h3>
+          <p className="text-sm text-stone-500 leading-relaxed mt-1.5 line-clamp-2">{product.description}</p>
+        </div>
+
+        {/* ── TINTABLE: Base selector ───────────────────── */}
+        {product.type === PRODUCT_TYPE.TINTABLE && (
+          <OptionGroup label="Base">
+            <div className="flex flex-wrap gap-1.5">
+              {product.bases.filter(b => b.packs?.length).map(base => (
+                <Chip
+                  key={base.id}
+                  active={selectedBase?.id === base.id}
+                  onClick={() => handleBaseChange(base)}
+                  title={base.desc}
+                >
+                  {base.name}
+                </Chip>
+              ))}
+            </div>
+            {selectedBase?.desc && (
+              <p className="text-[0.7rem] text-stone-400 mt-1.5">{selectedBase.desc}</p>
             )}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {product.colors.map(color => (
-              <button
-                key={color.id}
-                onClick={() => setSelectedColor(color)}
-                title={color.name}
-                className={`w-7 h-7 rounded-full border-2 transition-all cursor-pointer flex-shrink-0 ${
-                  selectedColor?.id === color.id
-                    ? 'border-stone-900 scale-110 shadow-md'
-                    : 'border-stone-200 hover:border-stone-400 hover:scale-105'
-                }`}
-                style={{
-                  backgroundColor: color.hex,
-                  outline: ['#F5F5F5','#FFFFF0','#FFFDD0','#FAF7F0','#F8F8F8'].includes(color.hex)
-                    ? '1px solid #d1d5db' : 'none',
-                }}
-              />
+          </OptionGroup>
+        )}
+
+        {/* ── READYMIX: Color selector ──────────────────── */}
+        {product.type === PRODUCT_TYPE.READYMIX && (
+          <OptionGroup label="Colour" value={selectedColor?.name}>
+            <div className="flex flex-wrap gap-2">
+              {product.colors.map(color => {
+                const active = selectedColor?.id === color.id
+                return (
+                  <button
+                    key={color.id}
+                    type="button"
+                    onClick={() => setSelectedColor(color)}
+                    title={color.name}
+                    aria-label={color.name}
+                    aria-pressed={active}
+                    className={`w-7 h-7 rounded-full transition-all cursor-pointer shrink-0 ring-offset-2 ${
+                      active ? 'ring-2 ring-stone-900' : 'hover:scale-110'
+                    } ${LIGHT_HEX.includes(color.hex) ? 'border border-stone-300' : 'border-0'}`}
+                    style={{ backgroundColor: color.hex }}
+                  />
+                )
+              })}
+            </div>
+          </OptionGroup>
+        )}
+
+        {/* ── Pack size selector (updates per base) ─────── */}
+        <OptionGroup label="Pack Size">
+          <div className="flex flex-wrap gap-1.5">
+            {availablePacks.map(pack => (
+              <Chip
+                key={pack.size}
+                active={selectedPack?.size === pack.size}
+                onClick={() => setSelectedPack(pack)}
+              >
+                {pack.size}
+              </Chip>
             ))}
           </div>
-        </div>
-      )}
+        </OptionGroup>
 
-      {/* ── CLEAR: no option message ──────────────────── */}
-      {product.type === PRODUCT_TYPE.CLEAR && (
-        <div className="bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-xs text-stone-400">
-          No colour selection needed for this product.
-        </div>
-      )}
+        {/* ── Price + add (live: updates with base + pack) ─ */}
+        <div className="mt-auto pt-4 border-t border-stone-100 flex items-end justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-baseline gap-1.5 flex-wrap">
+              <span className="text-stone-900 font-extrabold text-xl">
+                {selectedPack?.price != null ? rupees(selectedPack.price) : '—'}
+              </span>
+              {hasDiscount && (
+                <span className="text-stone-400 text-sm line-through">{rupees(selectedPack.mrp)}</span>
+              )}
+            </div>
+            <p className="text-stone-400 text-xs truncate">
+              per {selectedPack?.size}
+              {product.type === PRODUCT_TYPE.READYMIX && selectedColor ? ` · ${selectedColor.name}` : ''}
+            </p>
+          </div>
 
-      {/* ── Pack size selector (updates per base) ─────── */}
-      <div>
-        <p className="text-[0.65rem] font-bold text-stone-400 uppercase tracking-wider mb-1.5">
-          Pack Size
-        </p>
-        <div className="flex flex-wrap gap-1.5">
-          {availablePacks.map(pack => (
-            <button
-              key={pack.size}
-              onClick={() => setSelectedPack(pack)}
-              className={`text-xs font-semibold px-2.5 py-1 rounded-md border transition-colors cursor-pointer ${
-                selectedPack?.size === pack.size
-                  ? `${style.bg} ${style.text} border-current`
-                  : 'bg-white text-stone-500 border-stone-200 hover:border-stone-400'
-              }`}
-            >
-              {pack.size}
-            </button>
-          ))}
+          <button
+            type="button"
+            onClick={handleAdd}
+            className={`flex items-center gap-1.5 shrink-0 px-4 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer border-0 ${
+              added ? 'bg-green-600 text-white' : 'bg-orange-700 hover:bg-orange-800 text-white'
+            }`}
+          >
+            {added
+              ? <><CheckIcon className="w-4 h-4" /> Added</>
+              : <><PlusIcon className="w-4 h-4" /> Add</>}
+          </button>
         </div>
       </div>
+    </article>
+  )
+}
 
-      {/* ── Price (live: updates with base + pack) ─────── */}
-    {/* ── Price (live: updates with base + pack) ─────── */}
-<div className="flex flex-col gap-0.5">
-  <div className="flex items-baseline gap-1.5 flex-wrap">
-    <span className="text-orange-700 font-extrabold text-xl">
-      ₹{selectedPack?.price?.toLocaleString('en-IN') ?? '—'}
-    </span>
-    {selectedPack?.mrp > selectedPack?.price && (
-      <>
-        <span className="text-stone-400 text-sm line-through">
-          ₹{selectedPack.mrp.toLocaleString('en-IN')}
-        </span>
-        <span className="text-green-600 text-xs font-semibold">
-          {Math.round(((selectedPack.mrp - selectedPack.price) / selectedPack.mrp) * 100)}% off
-        </span>
-      </>
-    )}
-  </div>
-  <span className="text-stone-400 text-xs">
-    / {selectedPack?.size}
-    {product.type === PRODUCT_TYPE.TINTABLE && selectedBase
-      ? ` · ${selectedBase.name}`
-      : ''}
-    {product.type === PRODUCT_TYPE.READYMIX && selectedColor
-      ? ` · ${selectedColor.name}`
-      : ''}
-  </span>
-  {selectedPack?.mrp > selectedPack?.price && (
-    <span className="text-[0.65rem] text-green-700 font-medium">
-      You save ₹{(selectedPack.mrp - selectedPack.price).toLocaleString('en-IN')}
-    </span>
-  )}
-</div>
-
-      {/* ── Add to order button ───────────────────────── */}
-      <button
-        onClick={handleAdd}
-        className={`w-full py-2.5 rounded-lg font-bold text-sm transition-all cursor-pointer border-0 mt-auto ${
-          added
-            ? 'bg-green-600 text-white'
-            : 'bg-stone-900 hover:bg-stone-700 text-white'
-        }`}
-      >
-        {added ? '✓ Added to Order' : '+ Add to Order'}
-      </button>
+function OptionGroup({ label, value, children }) {
+  return (
+    <div>
+      <p className="text-[0.65rem] font-bold text-stone-400 uppercase tracking-wider mb-1.5">
+        {label}
+        {value && <span className="ml-1.5 normal-case tracking-normal font-semibold text-stone-700">· {value}</span>}
+      </p>
+      {children}
     </div>
+  )
+}
+
+function Chip({ active, children, ...props }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors cursor-pointer ${
+        active
+          ? 'bg-stone-900 text-white border-stone-900'
+          : 'bg-white text-stone-600 border-stone-200 hover:border-stone-400'
+      }`}
+      {...props}
+    >
+      {children}
+    </button>
   )
 }
